@@ -1,0 +1,51 @@
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# Expo / React Native
+.expo/
+**/.expo/
+web-build/
+expo-env.d.ts
+/apps/mobile/ios/
+/apps/mobile/android/
+.kotlin/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+
+# Builds
+dist/
+**/dist/
+
+# Generated Prisma Client
+/apps/api/src/generated/prisma/
+
+# Runtime safety backups
+.runtime-backups/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Generated large models
+*.onnx
+
+# TypeScript
+*.tsbuildinfo
+
+# Runtime gate npm artifacts
+/apps/api/package-lock.json
+
+# OS/editor
+.DS_Store
+*.pem
+
+example

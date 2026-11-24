@@ -1,0 +1,674 @@
+import { useRouter } from 'expo-router';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  AppState,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { OrderCard } from '@/components/orders/order-card';
+import { AppIcon } from '@/components/ui/app-icon';
+import { BRAND_COLORS } from '@/constants/brand';
+import { useAuth } from '@/context/AuthContext';
+import { ordersApi } from '@/services/orders.api';
+import type { CustomerOrder, OrderFilter } from '@/types/orders';
+import {
+  matchesOrderFilter,
+  ORDER_FILTERS,
+} from '@/utils/order-status';
+
+const LALAMOVE_POLL_MS = 10_000;
+const LALAMOVE_TERMINAL_SHIPPING_STATUSES = new Set([
+  'delivered',
+  'completed',
+  'received_by_customer',
+  'delivery_disputed',
+  'returned',
+  'carrier_cancelled',
+  'cancelled',
+  'failed',
+]);
+
+function messageFrom(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
+function shouldPollLalamove(order: CustomerOrder) {
+  if ((order.shippingProvider || '').toLowerCase() !== 'lalamove') return false;
+  if (!order.trackingCode) return false;
+  if (['cancelled', 'completed', 'returned'].includes((order.status || '').toLowerCase())) return false;
+  return !LALAMOVE_TERMINAL_SHIPPING_STATUSES.has((order.shippingStatus || '').toLowerCase());
+}
+
+function OrderSeparator() {
+  return <View style={styles.separator} />;
+}
+
+const OrderFilterChip = memo(function OrderFilterChip({
+  item,
+  count,
+  active,
+  onSelect,
+}: {
+  item: (typeof ORDER_FILTERS)[number];
+  count: number;
+  active: boolean;
+  onSelect: (filter: OrderFilter) => void;
+}) {
+  const handlePress = useCallback(() => {
+    onSelect(item.key);
+  }, [item.key, onSelect]);
+
+  return (
+    <Pressable
+      accessibilityLabel={`${item.label}, ${count} đơn`}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={handlePress}
+      style={({ pressed }) => [
+        styles.filterChip,
+        active && styles.filterChipActive,
+        pressed && styles.pressed,
+      ]}>
+      <Text
+        style={[
+          styles.filterText,
+          active && styles.filterTextActive,
+        ]}>
+        {item.label}
+      </Text>
+      <View
+        style={[
+          styles.filterCount,
+          active && styles.filterCountActive,
+        ]}>
+        <Text
+          style={[
+            styles.filterCountText,
+            active && styles.filterCountTextActive,
+          ]}>
+          {count}
+        </Text>
+      </View>
+    </Pressable>
+  );
+});
+
+export default function OrdersScreen() {
+  const router = useRouter();
+  const { token, loading: authLoading } = useAuth();
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [filter, setFilter] = useState<OrderFilter>('all');
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const livePollInFlight = useRef(false);
+
+  const loadOrders = useCallback(
+    async (mode: 'initial' | 'refresh' = 'initial') => {
+      if (!token) {
+        setOrders([]);
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
+      if (mode === 'refresh') setRefreshing(true);
+      else setLoading(true);
+      setError(null);
+
+      try {
+        setOrders(await ordersApi.getOrders(token));
+      } catch (loadError) {
+        setError(
+          messageFrom(loadError, 'Không thể tải lịch sử đơn hàng.'),
+        );
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [token],
+  );
+
+  useEffect(() => {
+    if (!authLoading) void loadOrders('initial');
+  }, [authLoading, loadOrders]);
+
+  const liveLalamoveOrders = useMemo(
+    () => orders.filter(shouldPollLalamove),
+    [orders],
+  );
+
+  useEffect(() => {
+    if (!token || liveLalamoveOrders.length === 0) return;
+
+    let disposed = false;
+    const syncLiveLalamove = async () => {
+      if (disposed || livePollInFlight.current || AppState.currentState !== 'active') return;
+      livePollInFlight.current = true;
+      try {
+        await Promise.allSettled(
+          liveLalamoveOrders.map((order) => ordersApi.getTracking(token, order.orderCode)),
+        );
+        if (disposed) return;
+        const nextOrders = await ordersApi.getOrders(token);
+        if (!disposed) setOrders(nextOrders);
+      } catch {
+        // Webhook remains the primary source; polling is only a foreground fallback.
+      } finally {
+        livePollInFlight.current = false;
+      }
+    };
+
+    const interval = setInterval(() => void syncLiveLalamove(), LALAMOVE_POLL_MS);
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void syncLiveLalamove();
+    });
+    return () => {
+      disposed = true;
+      clearInterval(interval);
+      subscription.remove();
+    };
+  }, [liveLalamoveOrders, token]);
+
+  const filteredOrders = useMemo(
+    () => orders.filter((order) => matchesOrderFilter(order, filter)),
+    [filter, orders],
+  );
+
+  const counts = useMemo(() => {
+    const map = new Map<OrderFilter, number>();
+    ORDER_FILTERS.forEach(({ key }) => {
+      map.set(
+        key,
+        orders.filter((order) => matchesOrderFilter(order, key)).length,
+      );
+    });
+    return map;
+  }, [orders]);
+
+  const activeFilterLabel = useMemo(
+    () => ORDER_FILTERS.find((item) => item.key === filter)?.label || 'Tất cả',
+    [filter],
+  );
+
+  const openOrder = useCallback(
+    (order: CustomerOrder) => {
+      router.push({
+        pathname: '/orders/[id]',
+        params: { id: String(order.id) },
+      });
+    },
+    [router],
+  );
+
+  const renderOrder = useCallback(
+    ({ item }: { item: CustomerOrder }) => (
+      <OrderCard order={item} onPress={() => openOrder(item)} />
+    ),
+    [openOrder],
+  );
+
+  const selectFilter = useCallback((nextFilter: OrderFilter) => {
+    setFilter(nextFilter);
+  }, []);
+
+  if (authLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centerState}>
+          <ActivityIndicator color={BRAND_COLORS.primary} size="large" />
+          <Text style={styles.stateTitle}>Đang kiểm tra tài khoản</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!token) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centerState}>
+          <View style={styles.stateIcon}>
+            <AppIcon color={BRAND_COLORS.primary} name="bag" size={28} />
+          </View>
+          <Text style={styles.stateTitle}>Đăng nhập để xem đơn hàng</Text>
+          <Text style={styles.stateText}>
+            Lịch sử mua hàng và theo dõi vận chuyển chỉ hiển thị cho chính chủ tài khoản.
+          </Text>
+          <Pressable
+            accessibilityLabel="Đăng nhập để xem đơn hàng"
+            accessibilityRole="button"
+            onPress={() =>
+              router.replace({
+                pathname: '/auth/login',
+                params: { redirect: '/orders' },
+              })
+            }
+            style={({ pressed }) => [
+              styles.primaryButton,
+              pressed && styles.pressed,
+            ]}>
+            <Text style={styles.primaryButtonText}>Đăng nhập</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
+      <View style={styles.shell}>
+        <View style={styles.header}>
+          <Pressable
+            accessibilityLabel="Quay lại tài khoản"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => router.replace('/account')}
+            style={({ pressed }) => [
+              styles.backButton,
+              pressed && styles.pressed,
+            ]}>
+            <AppIcon color={BRAND_COLORS.ink} name="arrowLeft" size={22} />
+          </Pressable>
+          <View style={styles.headerCopy}>
+            <Text style={styles.eyebrow}>ĐƠN HÀNG CỦA TÔI</Text>
+            <Text style={styles.title}>Lịch sử mua hàng</Text>
+            <Text style={styles.subtitle}>
+              Theo dõi trạng thái, vận chuyển và xem lại đơn đã mua.
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.filterSection}>
+          <View style={styles.filterHeading}>
+            <Text style={styles.filterHeadingText}>Trạng thái đơn hàng</Text>
+            {!loading ? (
+              <Text style={styles.resultCount}>
+                {filteredOrders.length + ' đơn · ' + activeFilterLabel}
+              </Text>
+            ) : null}
+          </View>
+
+          <ScrollView
+            horizontal
+            style={styles.filterScroller}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filters}>
+            {ORDER_FILTERS.map((item) => (
+              <OrderFilterChip
+                active={filter === item.key}
+                count={counts.get(item.key) || 0}
+                item={item}
+                key={item.key}
+                onSelect={selectFilter}
+              />
+            ))}
+          </ScrollView>
+        </View>
+
+        {error ? (
+          <View style={styles.errorCard} accessibilityRole="alert">
+            <View style={styles.errorCopy}>
+              <Text style={styles.errorTitle}>Chưa tải được đơn hàng</Text>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+            <Pressable
+              accessibilityLabel="Thử tải lại đơn hàng"
+              accessibilityRole="button"
+              onPress={() => void loadOrders('initial')}
+              style={({ pressed }) => [
+                styles.retryButton,
+                pressed && styles.pressed,
+              ]}>
+              <Text style={styles.retryText}>Thử lại</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {loading ? (
+          <View style={styles.loadingCard}>
+            <ActivityIndicator color={BRAND_COLORS.primary} />
+            <Text style={styles.loadingText}>Đang tải đơn hàng...</Text>
+          </View>
+        ) : (
+          <FlatList
+            style={styles.list}
+            contentContainerStyle={[
+              styles.listContent,
+              filteredOrders.length === 0 && styles.listContentEmpty,
+            ]}
+            data={filteredOrders}
+            keyExtractor={(item) => String(item.id)}
+            ListEmptyComponent={
+              <View style={styles.emptyCard}>
+                <View style={styles.stateIcon}>
+                  <AppIcon color={BRAND_COLORS.primary} name="bag" size={28} />
+                </View>
+                <Text style={styles.emptyTitle}>
+                  {orders.length === 0
+                    ? 'Bạn chưa có đơn hàng nào'
+                    : 'Không có đơn ở trạng thái này'}
+                </Text>
+                <Text style={styles.emptyText}>
+                  {orders.length === 0
+                    ? 'Khi thanh toán thành công, đơn hàng sẽ xuất hiện tại đây.'
+                    : 'Chọn bộ lọc khác để xem các đơn còn lại.'}
+                </Text>
+                {orders.length === 0 ? (
+                  <Pressable
+                    accessibilityLabel="Tiếp tục mua sắm"
+                    accessibilityRole="button"
+                    onPress={() => router.replace('/')}
+                    style={({ pressed }) => [
+                      styles.emptyButton,
+                      pressed && styles.pressed,
+                    ]}>
+                    <Text style={styles.emptyButtonText}>Tiếp tục mua sắm</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                tintColor={BRAND_COLORS.primary}
+                onRefresh={() => void loadOrders('refresh')}
+              />
+            }
+            renderItem={renderOrder}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={OrderSeparator}
+            initialNumToRender={8}
+            windowSize={7}
+          />
+        )}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: BRAND_COLORS.canvas,
+  },
+  shell: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 18,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: BRAND_COLORS.line,
+    backgroundColor: BRAND_COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  headerCopy: { flex: 1, minWidth: 0 },
+  eyebrow: {
+    color: BRAND_COLORS.primary,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '900',
+    letterSpacing: 1.05,
+  },
+  title: {
+    color: BRAND_COLORS.ink,
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '900',
+  },
+  subtitle: {
+    marginTop: 3,
+    color: BRAND_COLORS.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  filterSection: {
+    marginBottom: 14,
+  },
+  filterHeading: {
+    minHeight: 22,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  filterHeadingText: {
+    color: BRAND_COLORS.ink,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '800',
+  },
+  resultCount: {
+    flexShrink: 1,
+    color: BRAND_COLORS.muted,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+  filterScroller: {
+    flexGrow: 0,
+    flexShrink: 0,
+    maxHeight: 44,
+    marginHorizontal: -16,
+  },
+  filters: {
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+  },
+  filterChip: {
+    height: 44,
+    alignSelf: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BRAND_COLORS.line,
+    backgroundColor: BRAND_COLORS.surface,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+  },
+  filterChipActive: {
+    borderColor: '#9CA3AF',
+    backgroundColor: BRAND_COLORS.primarySoft,
+  },
+  filterText: {
+    color: BRAND_COLORS.muted,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '800',
+  },
+  filterTextActive: {
+    color: BRAND_COLORS.primaryDark,
+    fontWeight: '900',
+  },
+  filterCount: {
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  filterCountActive: {
+    backgroundColor: BRAND_COLORS.primary,
+  },
+  filterCountText: {
+    color: BRAND_COLORS.muted,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '900',
+  },
+  filterCountTextActive: { color: '#FFFFFF' },
+  list: { flex: 1 },
+  listContent: {
+    paddingBottom: 40,
+  },
+  listContentEmpty: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  separator: { height: 12 },
+  loadingCard: {
+    flex: 1,
+    minHeight: 180,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: BRAND_COLORS.line,
+    backgroundColor: BRAND_COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 9,
+  },
+  loadingText: {
+    color: BRAND_COLORS.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+  },
+  errorCard: {
+    marginBottom: 12,
+    minHeight: 76,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    backgroundColor: '#FEF2F2',
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  errorCopy: { flex: 1 },
+  errorTitle: {
+    color: '#991B1B',
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: '900',
+  },
+  errorText: {
+    marginTop: 2,
+    color: '#B91C1C',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  retryButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  retryText: {
+    color: BRAND_COLORS.danger,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '900',
+  },
+  emptyCard: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 40,
+  },
+  stateIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: BRAND_COLORS.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    color: BRAND_COLORS.ink,
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  emptyText: {
+    marginTop: 6,
+    maxWidth: 360,
+    color: BRAND_COLORS.muted,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  emptyButton: {
+    marginTop: 16,
+    minHeight: 48,
+    borderRadius: 12,
+    backgroundColor: BRAND_COLORS.primary,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: '900',
+  },
+  centerState: {
+    flex: 1,
+    paddingHorizontal: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 11,
+  },
+  stateTitle: {
+    color: BRAND_COLORS.ink,
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  stateText: {
+    maxWidth: 380,
+    color: BRAND_COLORS.muted,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  primaryButton: {
+    minHeight: 48,
+    borderRadius: 12,
+    backgroundColor: BRAND_COLORS.primary,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: '900',
+  },
+  pressed: { opacity: 0.72 },
+});
