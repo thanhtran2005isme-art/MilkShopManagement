@@ -18,7 +18,7 @@ Web Admin React/Vite + NestJS/Prisma + MariaDB. Không còn Mobile và website k
    run.bat
    ```
    Seed tạo RBAC và tài khoản Admin bằng BCrypt; chạy lại không thay mật khẩu tài khoản đã tồn tại. Sau khi seed, có thể xóa MILKSHOP_ADMIN_PASSWORD khỏi .env.
-6. Kiểm tra http://localhost:5300/health (status ok, 55 bảng), http://localhost:5300/docs và http://localhost:5173/admin/login.
+6. `run.bat` mở hai cửa sổ BE/FE độc lập, Vite tự mở trang đăng nhập Admin. Nếu API chưa sẵn sàng, launcher hiển thị cảnh báo nhưng không chặn FE. Kiểm tra http://localhost:5300/health (status ok, 55 bảng), http://localhost:5300/docs và http://localhost:5173/admin/login.
 
 ## Phạm vi hiện tại
 

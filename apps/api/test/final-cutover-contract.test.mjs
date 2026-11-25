@@ -133,3 +133,16 @@ test("protected/race/realtime runtime harness vẫn tồn tại sau retirement",
   assert.match(raceBat, /node-concurrency-race-gate/);
   assert.match(realtimeBat, /node-realtime-runtime-gate/);
 });
+
+
+test("run.bat mở BE và Web Admin độc lập trước khi kiểm tra health", () => {
+  const all = readRepo("scripts/run-all.bat");
+  const web = readRepo("scripts/run-web.bat");
+  const startApi = all.indexOf('start "MilkShop - Node API"');
+  const startWeb = all.indexOf('start "MilkShop - Web Admin"');
+  const health = all.indexOf("wait-node-health.ps1");
+  assert.ok(startApi >= 0 && startWeb > startApi && health > startWeb);
+  assert.match(web, /call npm install/);
+  assert.match(web, /call npm run dev -- --host localhost --port 5173 --strictPort --open \/admin\/login/);
+  assert.match(web, /if errorlevel 1 goto :error/);
+});

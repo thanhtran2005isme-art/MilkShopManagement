@@ -23,7 +23,8 @@ while ((Get-Date) -lt $deadline) {
             Write-Host "[READY] Node API da san sang: HTTP $($response.StatusCode) $healthUrl" -ForegroundColor Green
             exit 0
         }
-        $lastError = "HTTP $($response.StatusCode)"
+        $health = $response.Content | ConvertFrom-Json
+        $lastError = "HTTP $($response.StatusCode); service=$($health.service); status=$($health.status); missingTables=$($health.database.missingTables -join ', '); missingPermissions=$($health.database.missingPermissions -join ', ')"
     }
     catch {
         $lastError = $_.Exception.Message
