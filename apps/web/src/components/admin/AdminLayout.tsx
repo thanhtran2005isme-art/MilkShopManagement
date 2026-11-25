@@ -501,10 +501,10 @@ export default function AdminLayout() {
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'active' : ''}`} id="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-logo">
-            <img src="/images/logokaitokid.png" alt="KAITO KID" />
-            <span className="sidebar-title">KAITO KID</span>
+            <img src="/images/milkshop-mark.svg" alt="" />
+            <span className="sidebar-title">MilkShop</span>
           </div>
-          <button className="sidebar-toggle" onClick={toggleSidebar}>
+          <button className="sidebar-toggle" aria-label="Thu gọn hoặc mở menu" onClick={toggleSidebar}>
             <AdminIcon name="fa fa-bars" />
           </button>
         </div>

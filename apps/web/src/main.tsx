@@ -44,6 +44,7 @@ import './styles/enhancements.css'
 
 // Admin page scene variants
 import './styles/admin/admin-page-variants.css'
+import './styles/admin/milkshop-admin.css'
 
 import App from './App.tsx'
 

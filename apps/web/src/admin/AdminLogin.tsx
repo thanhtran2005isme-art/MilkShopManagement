@@ -36,7 +36,7 @@ export default function AdminLogin() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+      background: '#f4f6f5',
       padding: 20,
     }}>
       <div style={{
@@ -45,12 +45,13 @@ export default function AdminLogin() {
         padding: '48px 40px',
         maxWidth: 420,
         width: '100%',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        boxShadow: '0 2px 8px rgba(15,23,42,0.06)',
+        border: '1px solid #dce3df',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <img
-            src="/images/logokaitokid.png"
-            alt="KAITO KID"
+            src="/images/milkshop-mark.svg"
+            alt="MilkShop"
             style={{ height: 48, marginBottom: 12 }}
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
@@ -78,14 +79,14 @@ export default function AdminLogin() {
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+            <label htmlFor="staff-email" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
               Email
             </label>
             <input
-              type="email"
+              id="staff-email" autoComplete="username" type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@kaitokid.vn"
+              placeholder="admin@milkshop.local"
               autoFocus
               style={{
                 width: '100%',
@@ -103,7 +104,7 @@ export default function AdminLogin() {
               Mật khẩu
             </label>
             <input
-              type="password"
+              id="staff-password" autoComplete="current-password" type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -124,7 +125,7 @@ export default function AdminLogin() {
             style={{
               width: '100%',
               padding: '14px',
-              background: loading ? '#94a3b8' : '#0f172a',
+              background: loading ? '#94a3b8' : '#176b4c',
               color: '#fff',
               border: 'none',
               borderRadius: 8,
@@ -138,7 +139,7 @@ export default function AdminLogin() {
         </form>
 
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: '#94a3b8' }}>
-          © 2026 KAITO KID Shop · Hệ thống quản trị nội bộ
+          © 2026 MilkShop · Hệ thống quản trị nội bộ
         </p>
       </div>
     </div>

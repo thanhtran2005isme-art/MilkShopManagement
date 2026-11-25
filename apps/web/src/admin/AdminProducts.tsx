@@ -4,17 +4,15 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import AdminIcon from '../components/admin/AdminIcon';
 import { useAdminUi } from '../components/admin/AdminUiProvider';
 import { adminProductsApi } from '../services/api';
-import { productService } from '../services/productService';
 import type { Product } from '../types';
 import { formatCurrency } from '../utils/format';
 import {
   matchesProductCategory,
-  matchesProductGender,
   toCanonicalCategory,
   toCanonicalGender,
 } from '../utils/productTaxonomy';
 
-const CATEGORY_OPTIONS = ['Ao', 'Quan', 'Vay', 'Dam', 'Phu kien'];
+const CATEGORY_OPTIONS = ['Sữa tươi', 'Sữa bột', 'Sữa chua'];
 const GENDER_OPTIONS = ['Nam', 'Nu', 'Tre em', 'Unisex'];
 const STATUS_OPTIONS: Product['status'][] = ['active', 'draft', 'out-of-stock'];
 const PAGE_SIZE_OPTIONS = [8, 12, 20];
@@ -63,11 +61,11 @@ type ViewMode = 'table' | 'grid';
 
 const defaultProduct = (): Partial<Product> => ({
   name: '',
-  category: 'Ao',
-  gender: 'Nam',
+  category: 'Sữa tươi',
+  gender: 'Unisex',
   price: 0,
   oldPrice: null,
-  stock: 100,
+  stock: 0,
   status: 'active',
   image: '',
   description: '',
@@ -75,10 +73,10 @@ const defaultProduct = (): Partial<Product> => ({
   isNew: false,
   isSale: false,
   isBestSeller: false,
-  rating: 4.5,
+  rating: 0,
   soldCount: 0,
   colors: [],
-  sizes: ['S', 'M', 'L', 'XL'],
+  sizes: [],
 });
 
 function parseListInput(value: string) {
@@ -108,22 +106,6 @@ function getPageNumbers(currentPage: number, totalPages: number) {
   return pages;
 }
 
-function formatShortCurrency(value: number) {
-  if (value >= 1_000_000_000) {
-    return `${(value / 1_000_000_000).toFixed(1)} tỷ`;
-  }
-
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)} triệu`;
-  }
-
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(0)}k`;
-  }
-
-  return `${Math.round(value)}`;
-}
-
 function getStatusMeta(status: Product['status']) {
   return STATUS_META[status];
 }
@@ -147,7 +129,7 @@ function matchesHighlightFilter(product: Product, filter: HighlightFilter) {
 function getHighlightLabel(filter: HighlightFilter) {
   switch (filter) {
     case 'sale':
-      return 'Sale';
+      return 'Giảm giá';
     case 'new':
       return 'Mới';
     case 'best-seller':
@@ -164,15 +146,15 @@ function getProductFlags(product: Product) {
   const flags: Array<{ key: string; label: string; icon: string; tone: string }> = [];
 
   if (product.isNew) {
-    flags.push({ key: 'new', label: 'New', icon: 'fa-fire', tone: 'new' });
+    flags.push({ key: 'new', label: 'Mới', icon: 'fa-fire', tone: 'new' });
   }
 
   if (product.isSale) {
-    flags.push({ key: 'sale', label: 'Sale', icon: 'fa-tag', tone: 'sale' });
+    flags.push({ key: 'sale', label: 'Giảm giá', icon: 'fa-tag', tone: 'sale' });
   }
 
   if (product.isBestSeller) {
-    flags.push({ key: 'best', label: 'Best Seller', icon: 'fa-trophy', tone: 'best' });
+    flags.push({ key: 'best', label: 'Bán chạy', icon: 'fa-trophy', tone: 'best' });
   }
 
   if (product.stock > 0 && product.stock <= 10) {
@@ -187,11 +169,13 @@ export default function AdminProducts() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { confirm, notify } = useAdminUi();
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [reload, setReload] = useState(0);
   const searchKeyword = searchParams.get('search') || '';
   const [search, setSearch] = useState(searchKeyword);
   const [statusFilter, setStatusFilter] = useState<'all' | Product['status']>('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [genderFilter, setGenderFilter] = useState('all');
   const [highlightFilter, setHighlightFilter] = useState<HighlightFilter>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [pageSize, setPageSize] = useState(8);
@@ -203,17 +187,39 @@ export default function AdminProducts() {
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
+    let cancelled = false;
     const loadProducts = async () => {
-      const result = await adminProductsApi.getAll({ pageSize: 200 });
-      if (result.success && result.data) {
-        setProducts(result.data.products);
-      } else {
-        // Fallback to local
-        setProducts(productService.getAll());
+      setLoading(true);
+      setLoadError('');
+      try {
+        const result = await adminProductsApi.getAll({ pageSize: 200, page: 1 });
+        if (cancelled) return;
+        if (!result.success || !result.data) {
+          setProducts([]);
+          setLoadError(result.error || 'Không tải được danh sách sản phẩm.');
+          return;
+        }
+        const items = [...result.data.products];
+        const pageCount = Math.ceil(result.data.total / result.data.pageSize);
+        for (let page = 2; page <= pageCount; page += 1) {
+          const next = await adminProductsApi.getAll({ pageSize: 200, page });
+          if (cancelled) return;
+          if (!next.success || !next.data) throw new Error(next.error || 'Không tải được đầy đủ sản phẩm.');
+          items.push(...next.data.products);
+        }
+        setProducts(items);
+      } catch {
+        if (!cancelled) {
+          setProducts([]);
+          setLoadError('Không tải được danh sách sản phẩm. Kiểm tra kết nối Backend.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
     void loadProducts();
-  }, []);
+    return () => { cancelled = true; };
+  }, [reload]);
 
   useEffect(() => {
     setSearch(searchKeyword);
@@ -221,7 +227,7 @@ export default function AdminProducts() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter, categoryFilter, genderFilter, highlightFilter, sortBy, pageSize, viewMode]);
+  }, [search, statusFilter, categoryFilter, highlightFilter, sortBy, pageSize, viewMode]);
 
   const categoryOptions = Array.from(
     new Set([
@@ -250,13 +256,11 @@ export default function AdminProducts() {
     const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
     const matchesCategory =
       categoryFilter === 'all' || matchesProductCategory(product.category, categoryFilter);
-    const matchesGender = genderFilter === 'all' || matchesProductGender(product.gender, genderFilter);
 
     return (
       matchesSearch &&
       matchesStatus &&
       matchesCategory &&
-      matchesGender &&
       matchesHighlightFilter(product, highlightFilter)
     );
   });
@@ -297,18 +301,13 @@ export default function AdminProducts() {
   const totalStockUnits = products.reduce((sum, product) => sum + product.stock, 0);
   const activeCount = products.filter((product) => product.status === 'active').length;
   const draftCount = products.filter((product) => product.status === 'draft').length;
-  const outOfStockCount = products.filter((product) => product.status === 'out-of-stock' || product.stock <= 0).length;
+  const outOfStockCount = products.filter((product) => product.status === 'out-of-stock').length;
   const lowStockCount = products.filter((product) => product.stock > 0 && product.stock <= 10).length;
-  const saleCount = products.filter((product) => product.isSale).length;
-  const newCount = products.filter((product) => product.isNew).length;
-  const bestSellerCount = products.filter((product) => product.isBestSeller).length;
-  const totalSoldUnits = products.reduce((sum, product) => sum + product.soldCount, 0);
 
   const activeFilters = [
     search.trim() ? { key: 'search', label: `Từ khóa: "${search.trim()}"` } : null,
     statusFilter !== 'all' ? { key: 'status', label: STATUS_LABELS[statusFilter] } : null,
     categoryFilter !== 'all' ? { key: 'category', label: CATEGORY_LABELS[categoryFilter] || categoryFilter } : null,
-    genderFilter !== 'all' ? { key: 'gender', label: GENDER_LABELS[genderFilter] || genderFilter } : null,
     highlightFilter !== 'all' ? { key: 'highlight', label: getHighlightLabel(highlightFilter) } : null,
   ].filter(Boolean) as Array<{ key: string; label: string }>;
 
@@ -317,7 +316,6 @@ export default function AdminProducts() {
     setSearchParams({});
     setStatusFilter('all');
     setCategoryFilter('all');
-    setGenderFilter('all');
     setHighlightFilter('all');
     setSortBy('newest');
     setPageSize(8);
@@ -405,136 +403,18 @@ export default function AdminProducts() {
     <div className="products-admin-page">
       <div className="page-header products-page-header">
         <div className="products-page-copy">
-          <span className="products-page-eyebrow">Catalog command center</span>
+          <div className="milkshop-breadcrumb">Sản phẩm / Danh sách</div>
           <h1>Quản lý sản phẩm</h1>
-          <p>
-            Theo dõi sức khỏe catalog, tồn kho, trạng thái hiển thị và các cờ marketing trong một màn hình quản trị
-            rõ ràng hơn để thao tác nhanh mà vẫn nhìn sản phẩm đẹp mắt.
-          </p>
+          <p>Quản lý danh mục, giá bán và số lượng tồn kho.</p>
         </div>
 
         <div className="page-actions products-page-actions">
-          <button
-            type="button"
-            className="products-header-button subtle"
-            onClick={() => {
-              setStatusFilter('all');
-              setHighlightFilter('low-stock');
-            }}
-          >
-            <AdminIcon name="fa-box-open" />
-            <span>Tồn kho thấp</span>
-          </button>
-          <button
-            type="button"
-            className="products-header-button subtle"
-            onClick={() => {
-              setStatusFilter('draft');
-              setHighlightFilter('all');
-            }}
-          >
-            <AdminIcon name="fa-folder-open" />
-            <span>Sản phẩm nháp</span>
-          </button>
           <Link to="/admin/products/add" className="products-header-button primary">
             <AdminIcon name="fa-plus" />
             <span>Thêm sản phẩm</span>
           </Link>
         </div>
       </div>
-
-      <section className="products-hero">
-        <div className="products-hero-main">
-          <span className="products-hero-badge">
-            <AdminIcon name="fa-bolt" />
-            Catalog snapshot
-          </span>
-          <h2>
-            {sortedProducts.length > 0
-              ? `${sortedProducts.length} sản phẩm đang hiển thị với tổng giá trị tồn kho ${formatShortCurrency(
-                  totalInventoryValue
-                )}.`
-              : 'Chưa có sản phẩm nào khớp với bộ lọc hiện tại.'}
-          </h2>
-          <p>
-            {outOfStockCount > 0 || lowStockCount > 0
-              ? `Hiện có ${outOfStockCount} sản phẩm hết hàng và ${lowStockCount} sản phẩm tồn thấp. Đây là nhóm nên ưu tiên xử lý để tránh hụt nhịp bán.`
-              : 'Catalog đang ở trạng thái khá sạch. Đây là lúc phù hợp để tối ưu sale, best seller và nội dung hiển thị của sản phẩm.'}
-          </p>
-
-          <div className="products-hero-metrics">
-            <div className="products-hero-metric-card">
-              <span>Giá trị tồn kho</span>
-              <strong>{formatCurrency(totalInventoryValue)}</strong>
-              <p>Tổng giá trị sản phẩm đang được giữ trong kho</p>
-            </div>
-            <div className="products-hero-metric-card">
-              <span>Sản phẩm đang xem</span>
-              <strong>{sortedProducts.length}</strong>
-              <p>Kết quả sau khi áp dụng bộ lọc và sắp xếp hiện tại</p>
-            </div>
-            <div className="products-hero-metric-card">
-              <span>Số lượng tồn kho</span>
-              <strong>{totalStockUnits}</strong>
-              <p>Tổng đơn vị sản phẩm đang có trong hệ thống</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="products-hero-side">
-          <div
-            className={`products-spotlight-card ${
-              outOfStockCount > 0 ? 'tone-danger' : lowStockCount > 0 ? 'tone-warning' : 'tone-success'
-            }`}
-          >
-            <div className="products-card-kicker">Cần chú ý</div>
-            <div className="products-spotlight-icon">
-              <AdminIcon
-                name={outOfStockCount > 0 ? 'fa-box-open' : lowStockCount > 0 ? 'fa-triangle-exclamation' : 'fa-check-circle'}
-              />
-            </div>
-            <h3>
-              {outOfStockCount > 0
-                ? `${outOfStockCount} sản phẩm đã hết hàng`
-                : lowStockCount > 0
-                  ? `${lowStockCount} sản phẩm tồn kho thấp`
-                  : 'Catalog đang ở trạng thái tốt'}
-            </h3>
-            <p>
-              {outOfStockCount > 0
-                ? 'Ưu tiên kiểm tra các SKU hết hàng để tránh mất cơ hội bán hàng ở các sản phẩm đang có nhu cầu.'
-                : lowStockCount > 0
-                  ? 'Nên rà lại nhóm sản phẩm gần chạm ngưỡng an toàn để chủ động nhập thêm hàng.'
-                  : 'Không có cảnh báo lớn về tình trạng catalog. Bạn có thể tập trung vào sale và trưng bày.'}
-            </p>
-          </div>
-
-          <div className="products-spotlight-grid">
-            <div className="products-side-card">
-              <span>Đang bán</span>
-              <strong>{activeCount}</strong>
-              <p>Sản phẩm active sẵn sàng hiển thị ngoài storefront</p>
-            </div>
-            <div className="products-side-card">
-              <span>Nháp</span>
-              <strong>{draftCount}</strong>
-              <p>Sản phẩm chưa hoàn thiện hoặc chưa cho hiển thị</p>
-            </div>
-            <div className="products-side-card">
-              <span>Sale / New</span>
-              <strong>
-                {saleCount} / {newCount}
-              </strong>
-              <p>Các cờ marketing đang được dùng trên catalog</p>
-            </div>
-            <div className="products-side-card">
-              <span>Bán ra</span>
-              <strong>{totalSoldUnits}</strong>
-              <p>Tổng số sản phẩm đã được bán theo dữ liệu hiện tại</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <div className="products-overview-grid">
         <button
@@ -553,7 +433,6 @@ export default function AdminProducts() {
           <div className="products-overview-copy">
             <span>Tất cả</span>
             <strong>{products.length}</strong>
-            <p>Toàn bộ catalog hiện có</p>
           </div>
         </button>
 
@@ -568,7 +447,6 @@ export default function AdminProducts() {
           <div className="products-overview-copy">
             <span>Đang bán</span>
             <strong>{activeCount}</strong>
-            <p>Sản phẩm hiển thị ngoài cửa hàng</p>
           </div>
         </button>
 
@@ -583,7 +461,6 @@ export default function AdminProducts() {
           <div className="products-overview-copy">
             <span>Nháp</span>
             <strong>{draftCount}</strong>
-            <p>Cần hoàn thiện nội dung hoặc cấu hình</p>
           </div>
         </button>
 
@@ -598,7 +475,6 @@ export default function AdminProducts() {
           <div className="products-overview-copy">
             <span>Hết hàng</span>
             <strong>{outOfStockCount}</strong>
-            <p>SKU đã chạm 0 hoặc được đánh dấu hết hàng</p>
           </div>
         </button>
 
@@ -613,7 +489,6 @@ export default function AdminProducts() {
           <div className="products-overview-copy">
             <span>Tồn kho thấp</span>
             <strong>{lowStockCount}</strong>
-            <p>Nhóm sản phẩm còn từ 1 đến 10 đơn vị</p>
           </div>
         </button>
       </div>
@@ -626,10 +501,11 @@ export default function AdminProducts() {
               className="search-input products-search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Tìm theo tên, SKU hoặc mô tả..."
+              placeholder="Tìm tên hoặc mã sản phẩm..."
+              aria-label="Tìm sản phẩm"
             />
             {search.trim() && (
-              <button type="button" className="products-inline-clear" onClick={() => setSearch('')}>
+              <button type="button" className="products-inline-clear" aria-label="Xóa từ khóa" onClick={() => setSearch('')}>
                 <AdminIcon name="fa-times" />
               </button>
             )}
@@ -637,6 +513,7 @@ export default function AdminProducts() {
 
           <select
             className="filter-select"
+            aria-label="Trạng thái"
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value as 'all' | Product['status'])}
           >
@@ -648,7 +525,7 @@ export default function AdminProducts() {
             ))}
           </select>
 
-          <select className="filter-select" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
+          <select className="filter-select" aria-label="Danh mục" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
             <option value="all">Tất cả danh mục</option>
             {categoryOptions.map((category) => (
               <option key={category} value={category}>
@@ -657,16 +534,7 @@ export default function AdminProducts() {
             ))}
           </select>
 
-          <select className="filter-select" value={genderFilter} onChange={(event) => setGenderFilter(event.target.value)}>
-            <option value="all">Tất cả giới tính</option>
-            {genderOptions.map((gender) => (
-              <option key={gender} value={gender}>
-                {GENDER_LABELS[gender] || gender}
-              </option>
-            ))}
-          </select>
-
-          <select className="filter-select" value={sortBy} onChange={(event) => setSortBy(event.target.value as SortOption)}>
+          <select className="filter-select" aria-label="Sắp xếp" value={sortBy} onChange={(event) => setSortBy(event.target.value as SortOption)}>
             <option value="newest">Mới cập nhật</option>
             <option value="name-asc">Tên A-Z</option>
             <option value="price-desc">Giá cao đến thấp</option>
@@ -697,10 +565,11 @@ export default function AdminProducts() {
           </div>
 
           <div className="products-toolbar-actions">
-            <label className="products-view-toggle">
+            <div className="products-view-toggle" role="group" aria-label="Kiểu hiển thị">
               <button
                 type="button"
                 className={viewMode === 'table' ? 'active' : ''}
+                aria-label="Dạng bảng" aria-pressed={viewMode === 'table'}
                 onClick={() => setViewMode('table')}
               >
                 <AdminIcon name="fa-list" />
@@ -708,11 +577,12 @@ export default function AdminProducts() {
               <button
                 type="button"
                 className={viewMode === 'grid' ? 'active' : ''}
+                aria-label="Dạng lưới" aria-pressed={viewMode === 'grid'}
                 onClick={() => setViewMode('grid')}
               >
                 <AdminIcon name="fa-stream" />
               </button>
-            </label>
+            </div>
 
             <label className="products-page-size">
               <span>Mỗi trang</span>
@@ -743,32 +613,14 @@ export default function AdminProducts() {
       <section className="products-list-shell">
         <div className="products-list-toolbar">
           <div className="products-list-copy">
-            <span className="products-list-eyebrow">Catalog view</span>
-            <h2>Hiển thị {sortedProducts.length} / {products.length} sản phẩm</h2>
-            <p>
-              {activeFilters.length > 0
-                ? 'Danh sách hiện tại đã được tinh gọn theo các bộ lọc bạn đang bật.'
-                : 'Đang xem toàn bộ catalog với cách sắp xếp hiện tại.'}
-            </p>
-          </div>
-
-          <div className="products-list-metrics">
-            <div className="products-metric-pill">
-              <span>Sale</span>
-              <strong>{saleCount}</strong>
-            </div>
-            <div className="products-metric-pill">
-              <span>Best seller</span>
-              <strong>{bestSellerCount}</strong>
-            </div>
-            <div className="products-metric-pill">
-              <span>New</span>
-              <strong>{newCount}</strong>
-            </div>
+            <h2>Danh sách sản phẩm <span className="milkshop-count">{sortedProducts.length}</span></h2>
+            <p>Tồn kho: {totalStockUnits} đơn vị · Giá trị theo giá bán: {formatCurrency(totalInventoryValue)}</p>
           </div>
         </div>
 
-        {viewMode === 'table' ? (
+        {loading && <div className="milkshop-data-state" role="status">Đang tải sản phẩm...</div>}
+        {loadError && <div className="milkshop-data-state" role="alert">{loadError} <button type="button" className="products-header-button subtle" onClick={() => setReload((n) => n + 1)}>Thử lại</button></div>}
+        {!loading && !loadError && (viewMode === 'table' ? (
           <div className="table-responsive">
             <table className="data-table products-data-table">
               <thead>
@@ -776,15 +628,14 @@ export default function AdminProducts() {
                   <th>Sản phẩm</th>
                   <th>Giá bán</th>
                   <th>Tồn kho</th>
-                  <th>Hiệu suất</th>
+                  <th>Đã bán</th>
                   <th>Trạng thái</th>
-                  <th></th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedProducts.map((product) => {
                   const canonicalCategory = toCanonicalCategory(product.category) || product.category;
-                  const canonicalGender = toCanonicalGender(product.gender) || product.gender;
                   const statusMeta = getStatusMeta(product.status);
                   const productFlags = getProductFlags(product);
 
@@ -803,8 +654,7 @@ export default function AdminProducts() {
                           <div className="product-row-copy">
                             <strong className="product-name-cell">{product.name}</strong>
                             <span className="product-subline">
-                              {product.subcategory || CATEGORY_LABELS[canonicalCategory] || canonicalCategory} •{' '}
-                              {GENDER_LABELS[canonicalGender] || canonicalGender}
+                              {product.subcategory || CATEGORY_LABELS[canonicalCategory] || canonicalCategory}
                             </span>
                             <span className="product-subline">SKU: {product.sku || '-'}</span>
                             <div className="product-flag-row">
@@ -837,12 +687,7 @@ export default function AdminProducts() {
 
                       <td>
                         <div className="product-performance-stack">
-                          <span>
-                            <AdminIcon name="fa-trophy" /> Đã bán {product.soldCount}
-                          </span>
-                          <span>
-                            <AdminIcon name="fa-star" /> {product.rating.toFixed(1)} / 5
-                          </span>
+                          <span>{product.soldCount}</span>
                         </div>
                       </td>
 
@@ -855,10 +700,10 @@ export default function AdminProducts() {
 
                       <td>
                         <div className="action-buttons">
-                          <button type="button" className="btn-action btn-edit" onClick={() => openEdit(product)}>
+                          <button type="button" className="btn-action btn-edit" aria-label={`Sửa ${product.name}`} title="Sửa sản phẩm" onClick={() => openEdit(product)}>
                             <AdminIcon name="fa-edit" />
                           </button>
-                          <button type="button" className="btn-action btn-delete" onClick={() => handleDelete(product.id)}>
+                          <button type="button" className="btn-action btn-delete" aria-label={`Xóa ${product.name}`} title="Xóa sản phẩm" onClick={() => handleDelete(product.id)}>
                             <AdminIcon name="fa-trash" />
                           </button>
                         </div>
@@ -873,7 +718,6 @@ export default function AdminProducts() {
           <div className="products-grid">
             {paginatedProducts.map((product) => {
               const canonicalCategory = toCanonicalCategory(product.category) || product.category;
-              const canonicalGender = toCanonicalGender(product.gender) || product.gender;
               const statusMeta = getStatusMeta(product.status);
               const productFlags = getProductFlags(product);
 
@@ -901,8 +745,7 @@ export default function AdminProducts() {
                   <div className="product-catalog-body">
                     <div className="product-catalog-topline">
                       <span>
-                        {product.subcategory || CATEGORY_LABELS[canonicalCategory] || canonicalCategory} •{' '}
-                        {GENDER_LABELS[canonicalGender] || canonicalGender}
+                        {product.subcategory || CATEGORY_LABELS[canonicalCategory] || canonicalCategory}
                       </span>
                       <span className={`status-badge ${statusMeta.tone}`}>
                         <AdminIcon name={statusMeta.icon} />
@@ -925,16 +768,14 @@ export default function AdminProducts() {
                       <span>
                         <AdminIcon name="fa-trophy" /> Bán {product.soldCount}
                       </span>
-                      <span>
-                        <AdminIcon name="fa-star" /> {product.rating.toFixed(1)}
-                      </span>
+
                     </div>
 
                     <div className="product-card-actions">
-                      <button type="button" className="btn-action btn-edit" onClick={() => openEdit(product)}>
+                      <button type="button" className="btn-action btn-edit" aria-label={`Sửa ${product.name}`} title="Sửa sản phẩm" onClick={() => openEdit(product)}>
                         <AdminIcon name="fa-edit" />
                       </button>
-                      <button type="button" className="btn-action btn-delete" onClick={() => handleDelete(product.id)}>
+                      <button type="button" className="btn-action btn-delete" aria-label={`Xóa ${product.name}`} title="Xóa sản phẩm" onClick={() => handleDelete(product.id)}>
                         <AdminIcon name="fa-trash" />
                       </button>
                     </div>
@@ -943,15 +784,15 @@ export default function AdminProducts() {
               );
             })}
           </div>
-        )}
+        ))}
 
-        {sortedProducts.length === 0 && (
+        {!loading && !loadError && sortedProducts.length === 0 && (
           <div className="products-empty-state">
             <div className="products-empty-icon">
               <AdminIcon name="fa-inbox" />
             </div>
             <h3>Không có sản phẩm nào khớp</h3>
-            <p>Hãy thử nới bộ lọc, đổi từ khóa tìm kiếm hoặc quay về toàn bộ catalog.</p>
+            <p>Thử đổi từ khóa hoặc xóa bộ lọc.</p>
             <button type="button" className="products-header-button subtle" onClick={resetFilters}>
               <AdminIcon name="fa-rotate-left" />
               <span>Xóa toàn bộ bộ lọc</span>

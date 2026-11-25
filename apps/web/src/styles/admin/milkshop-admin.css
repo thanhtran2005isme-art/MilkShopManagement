@@ -1,0 +1,94 @@
+/* MilkShop operational UI: shared shell + product list. */
+.admin-wrapper, .admin-wrapper.dashboard-frame, .admin-wrapper.product-builder-frame {
+  --primary-color:#176b4c; --primary-dark:#11543b; --primary-light:#dceee4;
+  --secondary-color:#176b4c; --secondary-light:#dceee4; --accent-color:#176b4c;
+  --gradient-primary:#176b4c; --gradient-secondary:#176b4c;
+  --shadow:0 1px 2px #142b1c0a; --shadow-md:0 1px 3px #142b1c0d; --shadow-lg:0 2px 8px #142b1c10;
+  --sidebar-width:248px; --topbar-height:64px;
+  background:#f4f6f5; color:#172a23; font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+.admin-wrapper::before,.admin-wrapper.dashboard-frame::before,.admin-wrapper.product-builder-frame::before {display:none;}
+.admin-wrapper .sidebar,.admin-wrapper.dashboard-frame .sidebar,.admin-wrapper.product-builder-frame .sidebar {
+  background:#fff; border-right:1px solid #dce3df; box-shadow:none; backdrop-filter:none;
+}
+.admin-wrapper .sidebar::before {display:none;}
+.admin-wrapper .sidebar-header {padding:16px; background:#fff; border-bottom:1px solid #e5eae7;}
+.admin-wrapper .sidebar-logo {gap:10px;}
+.admin-wrapper .sidebar-logo img {width:36px;height:36px;object-fit:contain;border-radius:8px;box-shadow:none;}
+.admin-wrapper .sidebar-title,.admin-wrapper.dashboard-frame .sidebar-title {color:#172a23;background:none;-webkit-text-fill-color:currentColor;font-size:19px;font-weight:700;letter-spacing:-.3px;}
+.admin-wrapper .sidebar-toggle,.admin-wrapper.dashboard-frame .sidebar-toggle {background:#f4f6f5;color:#35483e;box-shadow:none;border:1px solid #dce3df;border-radius:8px;}
+.admin-wrapper .sidebar-toggle:hover {transform:none;background:#e8eee9;}
+.admin-wrapper .nav-item {animation:none;}
+.admin-wrapper .nav-link,.admin-wrapper.dashboard-frame .nav-link {border-radius:7px;padding:11px 13px;color:#35483e;font-weight:500;box-shadow:none;transform:none;}
+.admin-wrapper .nav-link:hover,.admin-wrapper.dashboard-frame .nav-link:hover {background:#f2f5f3;color:#176b4c;transform:none;box-shadow:none;}
+.admin-wrapper .nav-item.active .nav-link,.admin-wrapper.dashboard-frame .nav-item.active .nav-link,.admin-wrapper.product-builder-frame .nav-item.active .nav-link {background:#e5f2e9;color:#176b4c;box-shadow:none;font-weight:650;}
+.admin-wrapper .nav-item.active .nav-link .admin-icon,.admin-wrapper.dashboard-frame .nav-item.active .nav-link .admin-icon {color:#176b4c;}
+.admin-wrapper .nav-link::before,.admin-wrapper .nav-item.active .nav-link::before {display:none;}
+.admin-wrapper .submenu {background:#f7f9f7;border-radius:8px;}
+.admin-wrapper .submenu a {color:#475569;}
+.admin-wrapper .submenu a:hover,.admin-wrapper .submenu a.active {color:#176b4c;background:#e5f2e9;}
+.admin-wrapper .sidebar-footer,.admin-wrapper .admin-info {background:white;box-shadow:none;border-color:#e5eae7;}
+.admin-wrapper .admin-avatar,.admin-wrapper .admin-avatar-small {background:#176b4c;box-shadow:none;color:#fff;}
+.admin-wrapper .admin-role {background:#edf4ef;color:#176b4c;}
+.admin-wrapper .top-bar,.admin-wrapper.dashboard-frame .top-bar,.admin-wrapper.product-builder-frame .top-bar {background:#fff;box-shadow:none;border-bottom:1px solid #dce3df;backdrop-filter:none;}
+.admin-wrapper .search-box,.admin-wrapper .admin-btn,.admin-wrapper .notification-btn {background:#fff;box-shadow:none;border:1px solid #dce3df;border-radius:8px;}
+.admin-wrapper .content-wrapper {padding:24px;animation:none;}
+.admin-wrapper .page-header h1 {color:#172a23;background:none;-webkit-text-fill-color:currentColor;font-size:25px;letter-spacing:-.5px;}
+.admin-wrapper .page-header h1::after {display:none;}
+.admin-wrapper .btn-primary {background:#176b4c;color:white;box-shadow:none;border-radius:8px;}
+.admin-wrapper .btn-primary:hover {background:#11543b;transform:none;box-shadow:none;}
+.admin-wrapper :is(button,a,input,select,textarea):focus-visible {outline:2px solid #176b4c;outline-offset:3px;}
+.admin-wrapper .products-admin-page {gap:14px;}
+.admin-wrapper .products-admin-page .products-page-header {background:none;border:0;box-shadow:none;padding:0;margin:0;align-items:center;gap:12px;}
+.admin-wrapper .products-admin-page .products-page-copy {gap:4px;}
+.milkshop-breadcrumb {font-size:12px;color:#52645b;}
+.admin-wrapper .products-admin-page .products-page-copy p {font-size:14px;line-height:1.5;}
+.admin-wrapper .products-admin-page .products-header-button {min-height:40px;border-radius:8px;padding:9px 14px;box-shadow:none;transform:none;}
+.admin-wrapper .products-admin-page .products-header-button.primary {background:#176b4c;color:#fff;}
+.admin-wrapper .products-admin-page .products-header-button.primary:hover {background:#11543b;}
+.admin-wrapper .products-admin-page :is(.products-overview-card,.products-filter-panel,.products-list-shell,.product-catalog-card) {background:#fff;border:1px solid #dce3df;border-radius:10px;box-shadow:none;backdrop-filter:none;transform:none;}
+.admin-wrapper .products-admin-page :is(.products-overview-card,.products-filter-panel,.products-list-shell,.product-catalog-card):hover {box-shadow:none;transform:none;}
+.admin-wrapper .products-admin-page .products-overview-grid {gap:10px;grid-template-columns:repeat(5,minmax(0,1fr));}
+.admin-wrapper .products-admin-page .products-overview-card {padding:13px 14px;gap:10px;align-items:center;}
+.admin-wrapper .products-admin-page .products-overview-card.active {border-color:#176b4c;background:#f4faf6;}
+.admin-wrapper .products-admin-page .products-overview-icon {width:34px;height:34px;border-radius:8px;background:#edf4ef;color:#176b4c;box-shadow:none;}
+.admin-wrapper .products-admin-page .products-overview-icon.draft {background:#f1f5f9;color:#475569;}
+.admin-wrapper .products-admin-page .products-overview-icon.out-of-stock {background:#fef2f2;color:#b91c1c;}
+.admin-wrapper .products-admin-page .products-overview-icon.low-stock {background:#fff7e6;color:#92400e;}
+.admin-wrapper .products-admin-page .products-overview-copy {gap:2px;}
+.admin-wrapper .products-admin-page .products-overview-copy span {font-size:12px;text-transform:none;letter-spacing:0;color:#52645b;font-weight:500;margin:0;}
+.admin-wrapper .products-admin-page .products-overview-copy strong {font-size:23px;line-height:1.2;color:#172a23;margin:0;}
+.admin-wrapper .products-admin-page .products-filter-panel {padding:13px 16px;}
+.admin-wrapper .products-admin-page .products-filter-row {gap:8px;}
+.admin-wrapper .products-admin-page .products-search-shell {min-width:min(230px,100%);background:#fff;border:1px solid #dce3df;border-radius:8px;box-shadow:none;padding:0 10px;}
+.admin-wrapper .products-admin-page .filter-select {min-width:130px;background:#fff;border:1px solid #dce3df;border-radius:8px;box-shadow:none;min-height:40px;}
+.admin-wrapper .products-admin-page .btn-filter-reset {background:#fff;border:1px solid #dce3df;border-radius:8px;color:#35483e;box-shadow:none;min-height:40px;}
+.admin-wrapper .products-admin-page .products-filter-footer {margin-top:12px;padding-top:10px;gap:8px;border-color:#e5eae7;}
+.admin-wrapper .products-admin-page .products-highlight-chip {border-radius:6px;background:#f4f6f5;color:#475569;box-shadow:none;}
+.admin-wrapper .products-admin-page .products-highlight-chip.active,.admin-wrapper .products-admin-page .products-view-toggle button.active,.admin-wrapper .products-admin-page .products-filter-tag {background:#e5f2e9;color:#176b4c;box-shadow:none;}
+.admin-wrapper .products-admin-page .products-active-filters {margin-top:6px;}
+.admin-wrapper .products-admin-page .products-list-shell {padding:0;}
+.admin-wrapper .products-admin-page .products-list-toolbar {padding:14px 16px;margin:0;align-items:center;border-bottom:1px solid #e5eae7;}
+.admin-wrapper .products-admin-page .products-list-copy h2 {font-size:16px;color:#172a23;letter-spacing:0;}
+.admin-wrapper .products-admin-page .products-list-copy p {font-size:12px;color:#52645b;}
+.milkshop-count {display:inline-block;background:#edf4ef;color:#176b4c;font-size:12px;padding:2px 7px;border-radius:5px;margin-left:6px;vertical-align:middle;}
+.admin-wrapper .products-admin-page .table-responsive {overflow-x:auto;border:0;border-radius:0;}
+.admin-wrapper .products-admin-page .products-data-table {min-width:680px;}
+.admin-wrapper .products-admin-page .products-data-table thead {background:#f4f6f5;}
+.admin-wrapper .products-admin-page .products-data-table th {font-size:12px;text-transform:none;letter-spacing:0;padding:12px 16px;color:#52645b;}
+.admin-wrapper .products-admin-page .products-data-table td {padding:12px 16px;border-color:#e5eae7;}
+.admin-wrapper .products-admin-page .products-data-table tbody tr:hover {background:#f7faf8;}
+.admin-wrapper .products-admin-page .product-img {width:44px;height:44px;border-radius:7px;box-shadow:none;}
+.admin-wrapper .products-admin-page .product-name-cell {font-size:14px;}
+.admin-wrapper .products-admin-page .product-subline {font-size:12px;color:#52645b;}
+.admin-wrapper .products-admin-page .product-price-stack strong {font-size:14px;color:#172a23;}
+.admin-wrapper .products-admin-page .status-badge,.admin-wrapper .products-admin-page .stock-pill {border-radius:6px;box-shadow:none;}
+.admin-wrapper .products-admin-page .btn-action {border-radius:7px;box-shadow:none;min-width:34px;min-height:34px;}
+.admin-wrapper .products-admin-page .btn-action:hover {transform:none;}
+.admin-wrapper .products-admin-page .products-list-footer {padding:12px 16px;margin:0;border-top:1px solid #e5eae7;}
+.admin-wrapper .products-admin-page .page-btn.active {background:#176b4c;color:#fff;box-shadow:none;}
+.admin-wrapper .products-admin-page .products-grid {padding:14px;}
+.milkshop-data-state {padding:28px 16px;text-align:center;color:#52645b;}
+@media(max-width:1100px){.admin-wrapper .products-admin-page .products-overview-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:768px){.admin-wrapper .content-wrapper{padding:14px;}.admin-wrapper .products-admin-page .products-page-header{align-items:flex-start;flex-wrap:wrap;}.admin-wrapper .products-admin-page .products-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.admin-wrapper .products-admin-page .products-filter-row>*{flex:1 1 140px;}.admin-wrapper .products-admin-page .products-search-shell{flex:1 1 100%;}.admin-wrapper .products-admin-page .products-page-actions{margin-left:0;}}
+@media(prefers-reduced-motion:reduce){.admin-wrapper .nav-link,.admin-wrapper .products-admin-page *{transition:none;animation:none;}}

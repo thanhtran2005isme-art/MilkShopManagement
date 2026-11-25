@@ -1,9 +1,5 @@
-# UI/UX Guide — Web Admin
+# UI/UX Guide — MilkShop Web Admin
 
-Giữ giao diện hiện tại trong bước tách nền tảng; chưa đổi nhận diện hay layout.
+Thiết kế quản trị bán lẻ thực dụng, ưu tiên bảng dữ liệu và thao tác. Nền #f4f6f5, surface trắng, viền #dce3df, chữ #172a23, nhấn xanh #176b4c, màu cảnh báo theo ngữ nghĩa. Không gradient trang trí, hero marketing, thống kê trùng lặp hoặc hiệu ứng nhấc card. Dùng 8px radius, khoảng cách 12–24px, font hệ thống. Tên chức năng tiếng Việt rõ ràng; bảng và bộ lọc xuất hiện trong màn hình đầu.
 
-- Trước khi sửa UI, đọc `skill/.codex/skills/ui-ux-pro-max/SKILL.md` và guideline React Web phù hợp, sử dụng design system hiện hữu trong `design-system/`.
-- Giữ cấu trúc sidebar, dashboard, bảng, form, bộ lọc, phân trang và quyền Admin; không thay đổi nghiệp vụ khi chỉnh giao diện thuần túy.
-- Kiểm tra accessibility, keyboard navigation, label/validation, responsive, trạng thái loading/error/empty và focus. Không dùng dữ liệu giả thay API.
-- Backend là nguồn xác thực cho tồn kho, giá, đơn hàng, tiền và quyền.
-- Lịch sử guideline dự án nguồn được lưu tại `docs/history/inherited-ui-ux.md` và không phải hướng dẫn runtime hiện hành.
+Giữ API, quyền, form, loading/error/empty và keyboard focus. Không dùng local seed thay dữ liệu API khi mất kết nối. CSS dùng chung ở milkshop-admin.css; thay đổi trang khác dần dần. Trước khi sửa UI đọc skill UI/UX và guideline React.

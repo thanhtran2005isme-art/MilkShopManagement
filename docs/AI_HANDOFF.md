@@ -31,3 +31,6 @@ Tài liệu lịch sử được lưu trong docs/history; không dùng các hư�
 
 ## Quy tắc Git (yêu cầu chủ repository)
 Chỉ làm việc và commit trực tiếp trên nhánh `main`. Không tạo nhánh phụ hoặc PR mới. Kiểm tra build/test phù hợp và báo rõ trạng thái xác minh. Không force-push.
+
+## Giao diện MilkShop
+Trang danh sách sản phẩm và khung Admin chuyển sang nền trung tính, màu xanh, bảng dữ liệu ưu tiên; bỏ hero và thống kê lặp, bỏ bộ lọc giới tính khỏi danh sách, logo MilkShop mới. API lỗi hiển thị lỗi thay vì dữ liệu local. Các trang chức năng khác và form sản phẩm vẫn cần chuyển đổi sâu theo nghiệp vụ sữa.
