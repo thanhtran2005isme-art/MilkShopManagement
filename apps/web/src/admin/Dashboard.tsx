@@ -576,22 +576,8 @@ export default function Dashboard() {
                 </div>
               </Link>
             )}
-            {dashboardStats.pendingReviews > 0 && (
-              <Link to="/admin/reviews" className="notification-link">
-                <div className="notification-item">
-                  <div className="notification-icon review">
-                    <AdminIcon name="fa-star" />
-                  </div>
-                  <div className="notification-content">
-                    <div className="notification-text">Đánh giá chờ duyệt</div>
-                    <div className="notification-meta">{dashboardStats.pendingReviews} đánh giá mới</div>
-                  </div>
-                </div>
-              </Link>
-            )}
             {dashboardStats.pendingOrders === 0 &&
-              dashboardStats.lowStockProducts === 0 &&
-              dashboardStats.pendingReviews === 0 && (
+              dashboardStats.lowStockProducts === 0 && (
                 <div className="chart-empty-state notification-empty-state">
                   <AdminIcon name="fa-check-circle" />
                   <p>Hiện chưa có tác vụ nào cần xử lý.</p>

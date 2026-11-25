@@ -295,3 +295,7 @@ Giữ một trust boundary tại API.Auth, tái sử dụng session/JWT hiện c
 - migration `20260930_registration_email_verification.sql` là bắt buộc trên database hiện có.
 
 **Hệ quả:** API register trả `RegistrationPendingDTO` (HTTP 202) thay vì `TokenDTO`. Link verify thành công mới tạo account; sau đó user đăng nhập bình thường.
+
+## D029 — MilkShopManagement chỉ giữ Web/API
+
+**Ngày:** 2026-11-25. Loại bỏ ứng dụng Expo/React Native và launcher, CI, script cài/chạy liên quan. Giữ Web Admin và API/database contract kế thừa. D029 thay thế các yêu cầu runtime Mobile cũ (bao gồm D002 và D024 phần client); các quyết định backend còn hiệu lực nếu không xung đột. Web khách hàng vẫn tồn tại, không thuộc phạm vi QA hiện tại. Không dùng chung DB hoặc credential thật với dự án gốc.

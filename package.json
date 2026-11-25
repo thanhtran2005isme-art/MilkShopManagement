@@ -1,12 +1,8 @@
 {
-  "name": "kaitokid-shop",
+  "name": "milkshop-management",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "mobile": "npm --prefix apps/mobile start",
-    "mobile:android": "npm --prefix apps/mobile run android",
-    "mobile:lint": "npm --prefix apps/mobile run lint",
-    "mobile:typecheck": "npm --prefix apps/mobile run typecheck",
     "web": "npm --prefix apps/web run dev",
     "web:build": "npm --prefix apps/web run build",
     "web:lint": "npm --prefix apps/web run lint",
@@ -21,6 +17,6 @@
     "backend:node:build": "npm run backend:build",
     "backend:node:db:introspect": "npm run backend:db:introspect",
     "backend:node:db:audit": "npm run backend:db:audit",
-    "phase10:check": "npm run mobile:lint && npm run mobile:typecheck && npm run web:lint && npm run web:build && npm run backend:test"
+    "phase10:check": "npm run web:lint && npm run web:build && npm run backend:test"
   }
 }

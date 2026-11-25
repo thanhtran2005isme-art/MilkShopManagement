@@ -1,19 +1,18 @@
-# KaitoKidShop
+# MilkShopManagement
 
-Full-stack monorepo của **KaitoKid Shop Fashion** gồm Mobile, Web và backend NestJS Node dùng chung MariaDB.
+Dự án độc lập được tái sử dụng từ KaitoKidShop để kiểm thử Web Admin quản lý cửa hàng sữa. Giai đoạn hiện tại tách Web Admin/API; nghiệp vụ và nhận diện thời trang chưa chuyển đổi. Không dùng chung database hoặc thông tin tích hợp thật với dự án gốc.
 
 ## Cấu trúc hiện tại
 
 ```text
-KaitoKidShop/
+MilkShopManagement/
 ├─ apps/
 │  ├─ api/                 # NestJS 11 + Prisma 7, port 5300
-│  ├─ mobile/              # Expo + React Native
 │  └─ web/                 # React + TypeScript + Vite
 ├─ database/               # MariaDB schema + migrations
 ├─ scripts/                # Windows launchers + runtime gates
 ├─ docs/
-├─ run.bat                 # Node API + Expo Mobile
+├─ run.bat                 # Node API + Web
 ├─ package.json
 ├─ AGENTS.md
 └─ README.md
@@ -43,7 +42,6 @@ Cài dependencies:
 ```bat
 npm --prefix apps\api install
 npm --prefix apps\web install
-npm --prefix apps\mobile install
 ```
 
 ## Database
@@ -66,7 +64,7 @@ Database đã tồn tại cũng chạy migration trên theo cách in-place; khô
 database/migrations/
 ```
 
-Database development hiện dùng tên `kaitokid`; health/audit hiện kỳ vọng **55 bảng**. Ba bảng bổ sung của Ví KaitoKid là `ViDienTu`, `GiaoDichVi`, `YeuCauRutTien`.
+Schema kế thừa dùng tên `kaitokid`; trước khi import cần tạo database/instance riêng, rà soát `USE` và `CREATE DATABASE` trong SQL, không chạy trên dữ liệu KaitoKidShop gốc; health/audit hiện kỳ vọng **55 bảng**. Ba bảng bổ sung của Ví KaitoKid là `ViDienTu`, `GiaoDichVi`, `YeuCauRutTien`.
 
 Không dùng `prisma migrate reset`, `prisma migrate dev` hoặc `prisma db push` trên database đang có dữ liệu. Khi cần đồng bộ Prisma với schema hiện hữu, dùng:
 
@@ -78,7 +76,7 @@ npm --prefix apps\api run db:introspect
 
 - Khách có thể nhận tiền hoàn vào Ví KaitoKid sau khi hàng hoàn thực tế được Admin nhận/kiểm.
 - Cửa sổ gửi yêu cầu hoàn hàng là **15 ngày kể từ lúc khách xác nhận đã nhận hàng**.
-- Checkout Web/Mobile chỉ gửi `useWallet`; backend tự quyết định `walletUsed` và `amountDue`.
+- Checkout Web chỉ gửi `useWallet`; backend tự quyết định `walletUsed` và `amountDue`.
 - payOS chỉ xử lý phần `amountDue` còn lại sau ví. Ví trả đủ thì không tạo payment link payOS.
 - Khách có thể yêu cầu rút số dư; tiền được chuyển từ khả dụng sang tạm giữ cho tới khi Admin hoàn tất hoặc từ chối.
 - Mọi biến động tiền đi qua ledger `GiaoDichVi`; không có UI sửa số dư thủ công.
@@ -87,13 +85,13 @@ Chi tiết durable contract: `docs/decisions/D028-wallet-refund-withdrawal.md`.
 
 ## Chạy development trên Windows
 
-Node API + Mobile:
+Node API + Web:
 
 ```bat
 run.bat
 ```
 
-Toàn bộ Node API + Web + Mobile:
+Khởi động tương đương:
 
 ```bat
 scripts\run-all.bat
@@ -115,10 +113,11 @@ scripts\stop-all.bat
 
 - NestJS API + REST + Socket.IO: `5300`
 - Socket.IO path: `/chatHub`
-- Expo/Metro: `8081`
 - Vite Web: thường `5173`
 
-Web và Mobile mặc định gọi backend Node `:5300`.
+Web mặc định gọi backend Node `:5300`.
+
+Mở `http://localhost:5173/admin/login` để kiểm thử Admin (port Vite thực tế xem terminal). Chỉ còn giao diện Admin; route `/` chuyển đến `/admin/login`. API/SQL dùng chung cho đơn hàng vẫn được giữ đến khi tách nghiệp vụ bán tại quầy.
 
 ## Final gates
 
@@ -145,3 +144,7 @@ Các race gate có thể tạo backup dưới `.runtime-backups/`; thư mục n�
 7. `docs/DECISIONS.md` và `docs/decisions/`
 8. `docs/TROUBLESHOOTING.md`
 9. Git history + source liên quan
+
+## Phạm vi sau tinh giản
+
+Chỉ kiểm thử Web Admin. API của chat, ví điện tử, CMS và tìm kiếm hình ảnh không còn được đăng ký. Các service đơn hàng/hoàn tiền/checkout kế thừa và schema SQL vẫn giữ để tránh mất dữ liệu hoặc phá luồng hiện hữu trước khi xây dựng bán hàng tại quầy. Không chạy bộ nghiệm thu chat realtime cũ.

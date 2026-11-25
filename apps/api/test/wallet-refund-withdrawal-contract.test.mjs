@@ -17,8 +17,6 @@ const account = source("../src/modules/account/account.service.ts");
 const permissions = source("../src/migration/rbac-permission-manifest.ts");
 const tables = source("../src/migration/legacy-table-manifest.ts");
 const migration = source("../../../database/migrations/20261006_wallet_refund_withdrawal.sql");
-const webCheckout = source("../../web/src/pages/Checkout.tsx");
-const mobileCheckout = source("../../mobile/src/app/checkout/index.tsx");
 
 test("wallet schema có balance, immutable ledger và withdrawal hold", () => {
   assert.match(migration, /CREATE TABLE IF NOT EXISTS ViDienTu/);
@@ -115,10 +113,7 @@ test("customer API có summary, ledger và withdrawal", () => {
   assert.match(walletController, /@Post\("withdrawals"\)/);
 });
 
-test("Web và Mobile đều gửi useWallet và xử lý amountDue", () => {
-  assert.match(webCheckout, /useWallet/);
-  assert.match(webCheckout, /amountDue/);
-  assert.match(mobileCheckout, /useWallet/);
-  assert.match(mobileCheckout, /amountDue/);
-  assert.match(mobileCheckout, /Ví KaitoKid/);
+test("backend vẫn bảo vệ contract ví khi client mua sắm đã được gỡ", () => {
+  assert.match(orders, /useWallet/);
+  assert.match(payment, /amountDue/);
 });

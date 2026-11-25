@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { useStaffAuth } from '../../context/StaffAuthContext';
 import { useAdminUi } from './AdminUiProvider';
 import type { Order, Product } from '../../types';
@@ -11,7 +10,6 @@ import { orderService } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import { readAdminSettings } from '../../utils/adminSettingsConfig';
 import { readAdminProfile } from '../../utils/adminProfileConfig';
-import { readStoredReviews, type ReviewRecord } from '../../utils/reviewConfig';
 import AdminIcon from './AdminIcon';
 
 
@@ -69,7 +67,6 @@ const menuItems: MenuItem[] = [
       { path: '/admin/products', label: 'Danh sách sản phẩm' },
       { path: '/admin/products/add', label: 'Thêm sản phẩm' },
       { path: '/admin/categories', label: 'Danh mục' },
-      { path: '/admin/collections', label: 'Bộ sưu tập' },
       { path: '/admin/attributes', label: 'Thuộc tính' },
     ],
   },
@@ -85,36 +82,20 @@ const menuItems: MenuItem[] = [
     ],
   },
   { path: '/admin/customers', icon: 'fa-users', label: 'Khách hàng' },
-  { path: '/admin/chat', icon: 'fa-comments', label: 'Hỗ trợ chat' },
-  { path: '/admin/shipping', icon: 'fa-truck', label: 'Vận chuyển' },
   {
     icon: 'fa-tags',
     label: 'Khuyến mãi',
     submenu: [
       { path: '/admin/coupons', label: 'Mã giảm giá' },
       { path: '/admin/promotions', label: 'Chương trình KM' },
-      { path: '/admin/flash-sales', label: 'Flash Sale' },
     ],
   },
-  {
-    icon: 'fa-palette',
-    label: 'Giao diện',
-    submenu: [
-      { path: '/admin/homepage', label: 'Trang chủ' },
-      { path: '/admin/banners', label: 'Banner & Slider' },
-      { path: '/admin/lookbook', label: 'Lookbook' },
-      { path: '/admin/pages', label: 'Trang nội dung' },
-      { path: '/admin/menus', label: 'Menu & Footer' },
-    ],
-  },
-  { path: '/admin/reviews', icon: 'fa-star', label: 'Đánh giá' },
   { path: '/admin/reports', icon: 'fa-chart-bar', label: 'Báo cáo' },
   { path: '/admin/settings', icon: 'fa-cog', label: 'Cài đặt' },
 ];
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
-  const { hasPermission } = useStaffAuth();
+  const { staff, logout, hasPermission } = useStaffAuth();
   const { confirm } = useAdminUi();
   const adminProfile = readAdminProfile();
   const location = useLocation();
@@ -125,7 +106,6 @@ export default function AdminLayout() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<RawCustomer[]>([]);
-  const [reviews, setReviews] = useState<ReviewRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -133,9 +113,9 @@ export default function AdminLayout() {
   const searchRef = useRef<HTMLDivElement | null>(null);
   const notificationRef = useRef<HTMLDivElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
-  const adminName = user?.name || adminProfile.basic.displayName || adminProfile.basic.fullName || 'Admin';
-  const adminRole = adminProfile.work.position || 'Owner';
-  const adminAvatar = user?.avatar || adminProfile.basic.avatar;
+  const adminName = staff?.hoTen || adminProfile.basic.displayName || adminProfile.basic.fullName || 'Admin';
+  const adminRole = staff?.tenVaiTro || 'Nhân viên';
+  const adminAvatar = staff?.anhDaiDien || adminProfile.basic.avatar;
   const adminInitial = adminName.charAt(0).toUpperCase();
 
   const isMobileViewport = () => typeof window !== 'undefined' && window.innerWidth <= 768;
@@ -144,16 +124,8 @@ export default function AdminLayout() {
   const visibleMenu = useMemo<MenuItem[]>(() => {
     const items = [...menuItems];
     const settingsIdx = items.findIndex((i) => i.path === '/admin/settings');
-    let insertIdx = settingsIdx === -1 ? items.length : settingsIdx;
+    const insertIdx = settingsIdx === -1 ? items.length : settingsIdx;
 
-    if (hasPermission('wallet.view')) {
-      items.splice(insertIdx, 0, {
-        path: '/admin/wallet',
-        icon: 'fa-wallet',
-        label: 'Ví & rút tiền',
-      });
-      insertIdx += 1;
-    }
 
     const hrSubmenu: { path: string; label: string }[] = [];
     if (hasPermission('staff.view')) hrSubmenu.push({ path: '/admin/staff', label: 'Quản lý nhân viên' });
@@ -173,7 +145,6 @@ export default function AdminLayout() {
     setOrders(orderService.getAll());
     setProducts(productService.getAll());
     setCustomers(JSON.parse(localStorage.getItem('users') || '[]'));
-    setReviews(readStoredReviews());
   };
 
   useEffect(() => {
@@ -245,7 +216,7 @@ export default function AdminLayout() {
 
     setMobileMenuOpen(false);
     logout();
-    navigate('/login');
+    navigate('/admin/login', { replace: true });
   };
 
   const toggleSidebar = () => {
@@ -315,7 +286,6 @@ export default function AdminLayout() {
             || item.path === '/admin/orders'
             || item.path === '/admin/products'
             || item.path === '/admin/inventory'
-            || item.path === '/admin/homepage'
             || item.path === '/admin/reports';
         }
 
@@ -434,7 +404,6 @@ export default function AdminLayout() {
       return Number.isFinite(timestamp) && timestamp >= sevenDaysAgo;
     }).length;
     const pendingOrders = orders.filter((order) => order.status === 'pending').length;
-    const pendingReviews = reviews.filter((review) => review.status === 'pending').length;
     const outOfStockCount = inventoryAlerts.filter((product) => product.alertLevel === 'critical').length;
     const lowStockCount = inventoryAlerts.filter((product) => product.alertLevel === 'warning' || product.alertLevel === 'low').length;
     const nextNotifications: AdminNotificationItem[] = [];
@@ -487,17 +456,6 @@ export default function AdminLayout() {
       });
     }
 
-    if (settings.notifyNewReview && pendingReviews > 0) {
-      nextNotifications.push({
-        id: 'pending-reviews',
-        title: 'Đánh giá cho duyet',
-        detail: 'Review mới đang chờ kiểm duyệt và phản hồi từ admin.',
-        count: pendingReviews,
-        path: '/admin/reviews?status=pending',
-        icon: 'fa-star',
-        tone: 'info',
-      });
-    }
 
     if (settings.notifyNewCustomer && recentCustomers > 0) {
       nextNotifications.push({
@@ -512,7 +470,7 @@ export default function AdminLayout() {
     }
 
     return nextNotifications;
-  }, [customers, orders, products, reviews]);
+  }, [customers, orders, products]);
 
   const notificationCount = useMemo(
     () => notifications.reduce((total, item) => total + item.count, 0),
@@ -702,7 +660,7 @@ export default function AdminLayout() {
                   <div className="notification-panel-header">
                     <div>
                       <strong>Thông báo vận hành</strong>
-                      <p>Cập nhật từ đơn hàng, tồn kho, review và khách hàng.</p>
+                      <p>Cập nhật từ đơn hàng, tồn kho và khách hàng.</p>
                     </div>
                     {notificationCount > 0 ? <span className="notification-panel-count">{notificationCount}</span> : null}
                   </div>
@@ -739,10 +697,6 @@ export default function AdminLayout() {
                 </div>
               )}
             </div>
-            <a href="/" className="view-site-btn" target="_blank" rel="noreferrer">
-              <AdminIcon name="fa fa-external-link-alt" />
-              <span>Xem trang chủ</span>
-            </a>
             <div className={`admin-dropdown ${profileMenuOpen ? 'is-open' : ''}`} ref={profileMenuRef}>
               <button className="admin-btn" onClick={() => setProfileMenuOpen(!profileMenuOpen)}>
                 <div className="admin-avatar-small">

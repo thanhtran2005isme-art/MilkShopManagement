@@ -18,10 +18,10 @@ export function parseCorsOrigins(raw: string | undefined): string[] {
 }
 
 /**
- * Browser clients send an Origin header while native/mobile clients often do not.
+ * Browser clients send an Origin header; non-browser requests may omit it.
  * Exact configured origins are always accepted. For local development, if CORS is
  * configured for any loopback HTTP(S) origin, accept other loopback ports too so
- * Expo Web can move from 8081 to 8082/8083 when its preferred port is occupied.
+ * Vite Web can move to another local port when its preferred port is occupied.
  */
 export function isCorsOriginAllowed(
   origin: string | undefined,

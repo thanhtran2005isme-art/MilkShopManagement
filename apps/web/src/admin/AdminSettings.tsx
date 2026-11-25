@@ -210,7 +210,6 @@ export default function AdminSettings() {
     Number(settings.notifyCancelOrder) +
     Number(settings.notifyLowStock) +
     Number(settings.notifyOutOfStock) +
-    Number(settings.notifyNewReview) +
     Number(settings.notifyNewCustomer);
 
   const profileCompleteness = useMemo(() => {
@@ -253,7 +252,7 @@ export default function AdminSettings() {
       {
         icon: 'fa-bell',
         label: 'Cảnh báo',
-        value: `${enabledNotificationCount}/6 tín hiệu`,
+        value: `${enabledNotificationCount}/5 tín hiệu`,
         meta: enabledNotificationCount >= 4 ? 'Dashboard hiển thị khá đầy đủ' : 'Một số cảnh báo đang tắt',
         tone: enabledNotificationCount >= 4 ? 'positive' : 'info',
       },
@@ -752,13 +751,9 @@ export default function AdminSettings() {
           </nav>
 
           <div className="settings-rail-footer">
-            <Link to="/checkout" className="settings-hero-link">
-              <AdminIcon name="fa-shopping-bag" />
-              <span>Mở checkout</span>
-            </Link>
-            <Link to="/orders" className="settings-hero-link settings-hero-link-secondary">
+            <Link to="/admin/orders" className="settings-hero-link settings-hero-link-secondary">
               <AdminIcon name="fa-box" />
-              <span>Xem tracking đơn</span>
+              <span>Xem đơn hàng</span>
             </Link>
           </div>
         </aside>
@@ -1102,7 +1097,6 @@ export default function AdminSettings() {
                   <label className="settings-switch-card"><div><strong>Đơn bị hủy</strong><p>Giúp đội vận hành bắt được các đơn có vấn đề hoặc hoàn hủy.</p></div><input type="checkbox" checked={settings.notifyCancelOrder} onChange={(event) => updateField('notifyCancelOrder', event.target.checked)} /></label>
                   <label className="settings-switch-card"><div><strong>Cảnh báo sắp hết hàng</strong><p>Phù hợp để chủ động kế hoạch nhập kho.</p></div><input type="checkbox" checked={settings.notifyLowStock} onChange={(event) => updateField('notifyLowStock', event.target.checked)} /></label>
                   <label className="settings-switch-card"><div><strong>Cảnh báo hết hàng</strong><p>Tín hiệu khẩn hơn cho tồn kho đang chạm đáy.</p></div><input type="checkbox" checked={settings.notifyOutOfStock} onChange={(event) => updateField('notifyOutOfStock', event.target.checked)} /></label>
-                  <label className="settings-switch-card"><div><strong>Đánh giá mới</strong><p>Phù hợp với đội nội dung hoặc CSKH theo dõi phản hồi.</p></div><input type="checkbox" checked={settings.notifyNewReview} onChange={(event) => updateField('notifyNewReview', event.target.checked)} /></label>
                   <label className="settings-switch-card"><div><strong>Khách hàng mới</strong><p>Phản ánh trực tiếp tốc độ tăng trưởng tệp khách.</p></div><input type="checkbox" checked={settings.notifyNewCustomer} onChange={(event) => updateField('notifyNewCustomer', event.target.checked)} /></label>
                 </div>
                 <div className="settings-form-actions"><button type="button" className="settings-primary-btn" onClick={() => handleSaveSection('notifications', 'thông báo')}><AdminIcon name="fa-save" /><span>Lưu thông báo</span></button></div>

@@ -36,3 +36,6 @@ jobs:
 
       - name: Build API and run checkout/Lalamove contracts
         run: npm run test:checkout-order
+
+      - name: Admin, RBAC and runtime structure contracts
+        run: node --test test/admin-migration-contract.test.mjs test/auth-rbac-contract.test.mjs test/final-cutover-contract.test.mjs

@@ -2,12 +2,11 @@
 
 ## Overview
 
-KaitoKidShop là full-stack monorepo với **một backend NestJS Node** phục vụ Mobile, Web/Admin và MariaDB.
+MilkShopManagement là monorepo với **một backend NestJS Node** phục vụ Web/Admin và MariaDB. Phạm vi kiểm thử và giao diện hiện tại chỉ là Web Admin.
 
 ```text
- apps/mobile (Expo/RN) ─┐
-                        ├── HTTP :5300 ── apps/api (NestJS)
- apps/web (React/Vite) ─┘                  ├─ REST/Auth/Admin/Customer
+ apps/web (React/Vite) ─── HTTP :5300 ── apps/api (NestJS)
+                                           ├─ REST/Auth/Admin/Customer
                                            ├─ Socket.IO /chatHub
                                            ├─ static/media
                                            └─ background workers
@@ -22,8 +21,7 @@ Legacy ASP.NET Core services đã retire. Không có gateway/service C# song son
 
 ```text
 apps/api       NestJS + Prisma backend
-apps/mobile    Expo + React Native
-apps/web       React + TypeScript + Vite; customer + admin surfaces
+apps/web       React + TypeScript + Vite; Admin only
 database       MariaDB fresh schema nền + migrations
 scripts        Windows launchers/runtime gates
 docs           durable project context
@@ -49,7 +47,7 @@ Node là owner duy nhất của background workers. Các worker quan trọng v�
 
 ## Persistence
 
-Runtime database là MariaDB/MySQL-compatible, database `kaitokid`.
+Runtime database là MariaDB/MySQL-compatible, database riêng cho MilkShopManagement. SQL kế thừa có thể ghi tên `kaitokid`; rà soát trước khi import, không sử dụng DB dự án gốc.
 
 Fresh schema nền:
 
@@ -123,19 +121,7 @@ Web dùng một backend origin duy nhất:
 2. `VITE_API_BASE_URL`
 3. fallback `http://localhost:5300`
 
-Customer/Auth/Admin đều đi qua origin này.
-
-### Mobile
-
-Mobile dùng một Node API origin cho cả Auth và Customer:
-
-1. `EXPO_PUBLIC_NODE_API_URL`
-2. `EXPO_PUBLIC_API_URL`
-3. LAN auto-detect `http://<LAN-IP>:5300`
-4. Android emulator `http://10.0.2.2:5300`
-5. localhost fallback trên iOS/Web
-
-USB launcher reverse `8081` và `5300` khi có đúng một thiết bị ADB authorized.
+Auth/Admin đi qua origin này; API khách hàng dùng chung còn giữ để chuyển đổi nghiệp vụ sau.
 
 ## Media
 
@@ -143,7 +129,7 @@ Node phục vụ upload/public assets và mount shared `apps/web/public`. Fallba
 
 ## Payment boundary
 
-Online payment hiện hành trên PR #75 là payOS:
+Contract payment kế thừa từ dự án gốc là payOS:
 
 - secrets chỉ ở Node: `PAYOS_CLIENT_ID`, `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY`;
 - provider order code được suy ra reversible từ `MaDonHang`, không dùng `DonHang.Id` làm provider authority;
@@ -152,7 +138,7 @@ Online payment hiện hành trên PR #75 là payOS:
 - khi đơn dùng ví một phần, payOS create/get/reconcile/webhook chỉ được đối soát đúng `amountDue`, không phải `TongTien`;
 - khi ví trả đủ (`amountDue=0`), backend xác nhận paid/confirmed và không tạo payOS payment;
 - `NgayThanhToan`/`confirmed` chỉ được set qua wallet-full transaction, verified provider/reconcile path hoặc admin/dev compatibility path hiện có;
-- Web/Mobile poll payment status khi pending để refresh UI; polling không phải payment authority;
+- Web poll payment status khi pending để refresh UI; polling không phải payment authority;
 - cancel/expiry của online payment phải provider-first rồi mới commerce-second; local cancel/expiry đồng thời restore phần wallet debit nếu có;
 - online shipment chỉ được tạo sau khi paid;
 - runtime online payment chỉ bật khi đủ payOS credentials và `payosEnabled` không bị đặt `false`;
@@ -188,7 +174,7 @@ DB compatibility code vẫn dùng `PhuongThucThanhToan='ATM'` cho online payment
 
 ```text
 Node API :5300
-Expo Mobile :8081
+Web/Vite :5173 (typical)
 ```
 
 `scripts/run-all.bat`:
@@ -196,7 +182,6 @@ Expo Mobile :8081
 ```text
 Node API :5300
 Web/Vite :5173 (typical)
-Expo Mobile :8081
 ```
 
 `scripts/run-backend.bat` là compatibility alias cho Node API launcher.

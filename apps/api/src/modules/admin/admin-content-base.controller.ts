@@ -95,57 +95,6 @@ export class AdminAttributesController {
   }
 }
 
-@Controller("api/admin/banners")
-@UseGuards(JwtAuthGuard)
-export class AdminBannersController {
-  constructor(private readonly prisma: PrismaService) {}
-
-  @Get()
-  async all(@CurrentUser() user: AuthenticatedUser) {
-    permission(user, "banners.manage");
-    return jsonRows(await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM Banner ORDER BY ThuTu"));
-  }
-
-  private values(body: JsonRecord, creating = false) {
-    return {
-      TieuDe: text(body, "TieuDe"),
-      TieuDePhu: nullableText(body, "TieuDePhu"),
-      MoTa: nullableText(body, "MoTa"),
-      HinhAnh: text(body, "HinhAnh"),
-      LienKet: nullableText(body, "LienKet"),
-      LoaiBanner: text(body, "LoaiBanner", "slider"),
-      ViTri: text(body, "ViTri", "homepage"),
-      ThuTu: num(body, "ThuTu"),
-      TrangThai: text(body, "TrangThai", "active"),
-      NgayBatDau: date(body, "NgayBatDau"),
-      NgayKetThuc: date(body, "NgayKetThuc"),
-      ...(creating ? { NgayTao: date(body, "NgayTao", new Date()) } : {}),
-    };
-  }
-
-  @Post()
-  async create(@CurrentUser() user: AuthenticatedUser, @Body() body: JsonRecord) {
-    permission(user, "banners.manage");
-    return this.prisma.$transaction(async (tx) => {
-      const id = await insertRow(tx, "Banner", this.values(body, true));
-      return selectById(tx, "Banner", id);
-    });
-  }
-
-  @Put(":id")
-  update(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string, @Body() body: JsonRecord) {
-    permission(user, "banners.manage");
-    return updateRow(this.prisma, "Banner", intPath(rawId), this.values(body));
-  }
-
-  @Delete(":id")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string) {
-    permission(user, "banners.manage");
-    await deleteRow(this.prisma, "Banner", intPath(rawId));
-  }
-}
-
 @Controller("api/admin/categories")
 @UseGuards(JwtAuthGuard, AdminStaffGuard)
 export class AdminCategoriesController {

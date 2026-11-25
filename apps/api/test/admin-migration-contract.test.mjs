@@ -15,86 +15,64 @@ function source(path) {
 const moduleSource = source("../src/modules/admin/admin.module.ts");
 const baseSource = source("../src/modules/admin/admin-content-base.controller.ts");
 const salesSource = source("../src/modules/admin/admin-content-sales.controller.ts");
-const homeSource = source("../src/modules/admin/admin-content-home.controller.ts");
 const moreSource = source("../src/modules/admin/admin-content-more.controller.ts");
 const catalogSource = source("../src/modules/admin/admin-catalog.controller.ts");
 const operationsSource = source("../src/modules/admin/admin-operations.controller.ts");
-const allSource = [baseSource, salesSource, homeSource, moreSource, catalogSource, operationsSource].join("\n");
+const allSource = [baseSource, salesSource, moreSource, catalogSource, operationsSource].join("\n");
 
 const expectedControllers = [
   "AdminAttributesController",
-  "AdminBannersController",
   "AdminCategoriesController",
-  "AdminCollectionsController",
   "AdminCouponsController",
   "AdminCustomersController",
-  "AdminFlashSalesController",
-  "AdminHomepageBlocksController",
-  "AdminHomepageController",
   "AdminInventoryController",
-  "AdminLookbookController",
-  "AdminMenusController",
   "AdminOrdersController",
-  "AdminPagesController",
   "AdminProductsController",
   "AdminPromotionsController",
   "AdminReportsController",
-  "AdminReviewsController",
   "AdminSettingsController",
   "AdminStockReceiptsController",
   "AdminSuppliersController",
   "AdminVariantStockController",
-  "FlashSalesController",
 ];
 
 const expectedRoutes = [
   "api/admin/attributes",
-  "api/admin/banners",
   "api/admin/categories",
-  "api/admin/collections",
   "api/admin/coupons",
   "api/admin/customers",
-  "api/admin/flash-sales",
-  "api/admin/homepage-blocks",
-  "api/admin/homepage",
   "api/admin/inventory",
-  "api/admin/lookbook",
-  "api/admin/menus",
   "api/admin/orders",
-  "api/admin/pages",
   "api/admin/products",
   "api/admin/promotions",
   "api/admin/reports",
-  "api/admin/reviews",
   "api/admin/settings",
   "api/admin/stock-receipts",
   "api/admin/suppliers",
   "api/admin/variant-stock",
-  "api/flash-sales",
 ];
 
-test("Phase 10 registers all 23 legacy API.Admin controller surfaces", () => {
-  assert.equal(expectedControllers.length, 23);
-  assert.equal(expectedRoutes.length, 23);
+test("Admin đăng ký đúng 13 controller nghiệp vụ còn sử dụng", () => {
+  assert.equal(expectedControllers.length, 13);
+  assert.equal(expectedRoutes.length, 13);
   for (const name of expectedControllers) assert.match(moduleSource, new RegExp(`\\b${name}\\b`));
+  for (const name of ["AdminBannersController","AdminCollectionsController","AdminFlashSalesController","FlashSalesController","AdminHomepageBlocksController","AdminHomepageController","AdminLookbookController","AdminMenusController","AdminPagesController","AdminReviewsController"]) assert.doesNotMatch(moduleSource, new RegExp(`\\b${name}\\b`));
+  for (const route of ['banners','collections','flash-sales','homepage','homepage-blocks','lookbook','menus','pages','reviews']) assert.ok(!allSource.includes(`@Controller("api/admin/${route}")`));
   for (const route of expectedRoutes) assert.ok(allSource.includes(`@Controller(\"${route}\")`), `missing ${route}`);
 });
 
 test("legacy test-bypass admin areas are hardened to staff-only", () => {
   assert.match(baseSource, /@Controller\("api\/admin\/categories"\)[\s\S]*?@UseGuards\(JwtAuthGuard, AdminStaffGuard\)/);
-  assert.match(homeSource, /@Controller\("api\/admin\/homepage"\)[\s\S]*?@UseGuards\(JwtAuthGuard, AdminStaffGuard\)/);
   assert.match(catalogSource, /@Controller\("api\/admin\/products"\)[\s\S]*?@UseGuards\(JwtAuthGuard, AdminStaffGuard\)/);
   assert.match(operationsSource, /@Controller\("api\/admin\/stock-receipts"\)[\s\S]*?@UseGuards\(JwtAuthGuard, AdminStaffGuard\)/);
 });
 
 test("granular permissions used by API.Admin are preserved", () => {
   for (const permission of [
-    "attributes.manage", "banners.manage", "collections.manage", "coupons.manage",
-    "customers.view", "customers.manage", "flash_sales.manage", "homepage.manage",
-    "inventory.view", "inventory.manage", "inventory.history", "lookbook.manage",
-    "menus.manage", "orders.view", "orders.update_status", "pages.manage",
-    "promotions.manage", "dashboard.view", "reports.view", "reviews.view", "reviews.moderate",
-    "settings.view", "settings.manage", "suppliers.view", "suppliers.manage",
+    "attributes.manage", "coupons.manage", "customers.view", "customers.manage",
+    "inventory.view", "inventory.manage", "inventory.history", "orders.view", "orders.update_status",
+    "promotions.manage", "dashboard.view", "reports.view", "settings.view", "settings.manage",
+    "suppliers.view", "suppliers.manage",
   ]) assert.ok(allSource.includes(`\"${permission}\"`), `missing permission ${permission}`);
 });
 

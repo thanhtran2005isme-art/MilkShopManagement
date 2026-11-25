@@ -9,13 +9,6 @@ import { getMenuCategoryOptions, getMenuTaxonomyGroups, toCanonicalCategory, typ
 import type { Product } from '../types';
 import AdminIcon from '../components/admin/AdminIcon';
 
-interface CollectionOption {
-  id: number;
-  name: string;
-  slug: string;
-  status?: 'active' | 'hidden';
-}
-
 interface BuilderFormState {
   name: string;
   shortDesc: string;
@@ -73,12 +66,6 @@ const STATUS_OPTIONS: Array<{
     hint: 'Tạo SKU, mở bán sau.',
     icon: 'fa-box-open',
   },
-];
-
-const DEFAULT_COLLECTIONS: CollectionOption[] = [
-  { id: 1, name: 'Summer 2024', slug: 'summer-2024', status: 'active' },
-  { id: 2, name: 'Office Style', slug: 'office-style', status: 'active' },
-  { id: 3, name: 'Street Wear', slug: 'street-wear', status: 'active' },
 ];
 
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -170,38 +157,6 @@ function getLengthTone(length: number, min: number, max: number) {
   return 'good';
 }
 
-function readStoredCollections(): CollectionOption[] {
-  try {
-    const rawCollections = JSON.parse(localStorage.getItem('collections') || '[]');
-
-    if (Array.isArray(rawCollections) && rawCollections.length > 0) {
-      const normalizedCollections = rawCollections
-        .map((collection: Partial<CollectionOption>, index: number) => {
-          const name = String(collection.name || '').trim();
-
-          if (!name) {
-            return null;
-          }
-
-          return {
-            id: Number(collection.id) || index + 1,
-            name,
-            slug: slugify(String(collection.slug || name)),
-            status: collection.status === 'hidden' ? 'hidden' : 'active',
-          };
-        })
-        .filter(Boolean) as CollectionOption[];
-
-      if (normalizedCollections.length > 0) {
-        return normalizedCollections;
-      }
-    }
-  } catch {
-    return DEFAULT_COLLECTIONS;
-  }
-
-  return DEFAULT_COLLECTIONS;
-}
 
 function buildSkuCandidate(name: string, menu: ProductMenuKey | '', category: string) {
   const namePart = slugify(name).replace(/-/g, '').toUpperCase().slice(0, 8) || 'NEWITEM';
@@ -276,7 +231,6 @@ export default function AdminProductAdd() {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [collectionOptions, setCollectionOptions] = useState<CollectionOption[]>(DEFAULT_COLLECTIONS);
   const [autoFields, setAutoFields] = useState({
     slug: true,
     metaTitle: true,
@@ -290,7 +244,6 @@ export default function AdminProductAdd() {
   const [backendCategories, setBackendCategories] = useState<CategoryDTO[]>([]);
 
   useEffect(() => {
-    setCollectionOptions(readStoredCollections());
 
     // Load attributes (size, color) from backend
     const loadAttributes = async () => {
@@ -429,8 +382,6 @@ export default function AdminProductAdd() {
   const selectedCategoryGroupLabel = selectedCategoryOption?.group || 'Chưa có nhóm';
   const selectedStyleLabel = activeStyleOptions.find((option) => option.value === form.style)?.label || 'Không chọn';
   const selectedAgeLabel = activeAgeOptions.find((option) => option.value === form.ageGroup)?.label || 'Không chọn';
-  const selectedCollectionLabel =
-    collectionOptions.find((collection) => collection.slug === form.collection)?.name || 'Không có collection';
   const suggestedSlug = slugify(form.name.trim() || 'san-pham-mới');
   const resolvedSlug = slugify(form.slug.trim()) || suggestedSlug;
   const suggestedSku = buildSkuCandidate(form.name.trim(), form.menu, form.category);
@@ -1352,21 +1303,6 @@ export default function AdminProductAdd() {
               </div>
             )}
 
-            <div className="builder-field-group">
-              <label className="builder-label">Collection</label>
-              <select
-                className="builder-select"
-                value={form.collection}
-                onChange={(event) => setForm((currentForm) => ({ ...currentForm, collection: event.target.value }))}
-              >
-                <option value="">Không có</option>
-                {collectionOptions.map((collection) => (
-                  <option key={collection.id} value={collection.slug}>
-                    {collection.name}
-                  </option>
-                ))}
-              </select>
-            </div>
 
             <div className="builder-taxonomy-summary">
               <span>
@@ -1388,9 +1324,6 @@ export default function AdminProductAdd() {
                   <strong>Độ tuổi:</strong> {selectedAgeLabel}
                 </span>
               )}
-              <span>
-                <strong>Collection:</strong> {selectedCollectionLabel}
-              </span>
             </div>
           </section>
 
