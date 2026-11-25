@@ -15,6 +15,7 @@ export class HealthController {
         expectedTables: database.expectedTableCount,
         actualTables: database.actualTableCount,
         missingTables: database.missingTables,
+        missingColumns: database.missingColumns,
         missingPermissions: database.missingPermissions,
       },
     };

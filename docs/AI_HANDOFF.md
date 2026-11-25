@@ -43,3 +43,5 @@ Hai route mới `/admin/inventory/lots` và `/admin/pos`. Phiếu nhập mới b
 
 ## Chuẩn hóa nghiệp vụ quản lý sữa
 Form và danh sách sản phẩm dùng thương hiệu, dung tích, khối lượng, hương vị, mã vạch, đơn vị; không hiển thị size/màu/SEO. Thuộc tính là giá trị gợi ý theo 5 nhóm. Kho phân biệt tồn vật lý/tồn lô/hết hạn/có thể bán/chênh lệch; cảnh báo hiển thị lô thực tế. Đơn hàng mặc định POS, có bộ lọc đơn online cũ. Báo cáo POS tính giá vốn từ PhanBoLoBan, lợi nhuận gộp và giá trị hàng hết hạn/đã hủy. Cài đặt chỉ giữ thông tin cửa hàng và liên kết vận hành. Migration catalog_reports cần chạy sau lots_pos; giữ dữ liệu cũ. Giá trị hủy trước migration chưa biết số lượng không tính vào thiệt hại đã ghi nhận.
+
+- Health kiểm tra cột nghiệp vụ sữa, không chỉ bảng/quyền. POS trả 503 có hướng dẫn cập nhật khi truy vấn lỗi do thiếu schema. Nút các trang MilkShop có chiều rộng theo nhãn, nút xác nhận POS rộng toàn giỏ hàng.

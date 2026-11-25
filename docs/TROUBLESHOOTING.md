@@ -12,3 +12,5 @@
 - Health thiếu LoHang/PhanBoLoBan: sao lưu DB milkshop, import migration 20261125_milkshop_lots_pos.sql rồi khởi động lại. Nếu POS không bán được, kiểm tra lô còn hạn và tồn khả dụng, không chỉnh trực tiếp tồn sản phẩm theo lô.
 
 - Nếu báo lỗi Unknown column MaVach/KhoiLuongG/SoLuongHuy: sao lưu DB và import migration 20261125_milkshop_catalog_reports.sql sau migration lots_pos. Không DROP database.
+
+- POS HTTP 500 trên CSDL cũ: `/health` kiểm tra cả `missingColumns` (ví dụ SanPham.MaVach); hai migration `20261125_milkshop_lots_pos.sql` và `20261125_milkshop_catalog_reports.sql` cần được import theo thứ tự. Nếu `/health` ok nhưng API vẫn 500, xem stack trace ở cửa sổ Backend; không sửa hoặc xóa dữ liệu theo phỏng đoán.

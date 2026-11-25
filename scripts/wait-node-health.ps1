@@ -24,7 +24,7 @@ while ((Get-Date) -lt $deadline) {
             exit 0
         }
         $health = $response.Content | ConvertFrom-Json
-        $lastError = "HTTP $($response.StatusCode); service=$($health.service); status=$($health.status); missingTables=$($health.database.missingTables -join ', '); missingPermissions=$($health.database.missingPermissions -join ', ')"
+        $lastError = "HTTP $($response.StatusCode); service=$($health.service); status=$($health.status); missingTables=$($health.database.missingTables -join ', '); missingColumns=$($health.database.missingColumns -join ', '); missingPermissions=$($health.database.missingPermissions -join ', ')"
     }
     catch {
         $lastError = $_.Exception.Message

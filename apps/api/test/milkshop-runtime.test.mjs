@@ -23,6 +23,7 @@ test("MariaDB thật: health, đăng nhập, quyền truy cập và CRUD sản p
   assert.equal(health.json.status, "ok", JSON.stringify(health.json));
   assert.equal(health.json.database.actualTables, 57);
   assert.deepEqual(health.json.database.missingPermissions, []);
+  assert.deepEqual(health.json.database.missingColumns, []);
   assert.equal((await request("/api/admin/products")).status, 401);
   const login = await request("/api/auth/staff/login", "POST", { email, password });
   assert.equal(login.status, 200, JSON.stringify(login.json));
@@ -67,6 +68,8 @@ test("MariaDB: nhập hai lô, POS FEFO, lỗi vượt tồn, chống trùng, kh
  assert.equal((await receipt([{...item,maLo:""}])).status,400);
  const first=await receipt([item]);assert.equal(first.status,201,JSON.stringify(first.json));
  const second=await receipt([{...item,maLo:"QA-LATE-"+stamp,hanSuDung:day(40)}]);assert.equal(second.status,201,JSON.stringify(second.json));
+ const emptySearch=await request("/api/admin/pos/products?search=&page=1","GET",undefined,token);
+ assert.equal(emptySearch.status,200,JSON.stringify(emptySearch.json));
  const products=await request("/api/admin/pos/products?search="+sku,"GET",undefined,token);
  assert.equal(products.json.items[0].coTheBan,10);
  const sales={requestId:"qa-sale-"+stamp,tenKhach:"Khách QA",phuongThucThanhToan:"cash",giamGia:0,tienKhachDua:60000,items:[{sanPhamId:id,soLuong:6}]};

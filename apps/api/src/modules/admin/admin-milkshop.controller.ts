@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, ServiceUnavailableException, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { createHash, randomUUID } from "node:crypto";
 import { CurrentUser } from "../../auth/current-user.decorator.js";
 import type { AuthenticatedUser } from "../../auth/authenticated-user.js";
@@ -8,6 +8,7 @@ import { PrismaService } from "../../database/prisma.service.js";
 import { assertStaffPermission } from "../identity/staff-permissions.js";
 import { AdminStaffGuard } from "./admin-staff.guard.js";
 import { bodyValue, intPath, insertRow, jsonRows, jsonValue, num, pageValues, text, type JsonRecord } from "./admin-utils.js";
+import { missingMilkshopColumns } from "../../migration/milkshop-schema-columns.js";
 import { addDays, vietnamDate } from "./milkshop-lot-utils.js";
 
 const lotState = "CASE WHEN l.TrangThai<>'active' THEN l.TrangThai WHEN l.SoLuongCon=0 THEN 'empty' WHEN l.HanSuDung<=? THEN 'expired' WHEN l.HanSuDung<=? THEN 'expiring' ELSE 'available' END";
@@ -71,9 +72,15 @@ export class AdminPosController {
  async products(@CurrentUser() user:AuthenticatedUser,@Query("search") search?:string,@Query("page") rawPage?:string) {
   assertStaffPermission(user,"orders.update_status");
   const {page,pageSize,offset}=pageValues(rawPage,"30"),q="%"+(search??"").trim()+"%",today=vietnamDate();
+  try {
   const rows=await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT p.Id,p.TenSanPham,p.MaSanPham,p.MaVach,p.Gia,p.DonViTinh,p.HinhAnh,CASE WHEN p.TrangThai='active' THEN GREATEST(0,LEAST(p.TonKho-p.SoLuongDaGiu,COALESCE((SELECT SUM(l.SoLuongCon) FROM LoHang l WHERE l.SanPhamId=p.Id AND l.TrangThai='active' AND l.HanSuDung>?),0))) ELSE 0 END AS CoTheBan FROM SanPham p WHERE p.TrangThai IN ('active','out-of-stock') AND (p.TenSanPham LIKE ? OR p.MaSanPham LIKE ? OR p.MaVach LIKE ?) ORDER BY p.TenSanPham,p.Id LIMIT ? OFFSET ?",today,q,q,q,pageSize,offset);
   const count=await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT COUNT(*) AS total FROM SanPham WHERE TrangThai IN ('active','out-of-stock') AND (TenSanPham LIKE ? OR MaSanPham LIKE ? OR MaVach LIKE ? )",q,q,q);
   return {items:jsonRows(rows),total:Number(count[0]?.total??0),page,pageSize};
+  } catch (error) {
+   const missing=await missingMilkshopColumns(this.prisma).catch(()=>[] as string[]);
+   if(missing.length) throw new ServiceUnavailableException("CSDL MilkShop chưa cập nhật đầy đủ: "+missing.join(", ")+". Import migration lots_pos và catalog_reports theo README.");
+   throw error;
+  }
  }
  @Get("sales/:id")
  async getInvoice(@CurrentUser() user:AuthenticatedUser,@Param("id") rawId:string){

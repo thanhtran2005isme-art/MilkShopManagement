@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../database/prisma.service.js";
 import { LEGACY_TABLES, LEGACY_TABLE_COUNT } from "./legacy-table-manifest.js";
+import { missingMilkshopColumns } from "./milkshop-schema-columns.js";
 import { RBAC_PERMISSION_CODES } from "./rbac-permission-manifest.js";
 
 interface TableNameRow {
@@ -19,6 +20,7 @@ export interface LegacyDatabaseAudit {
   expectedTableCount: number;
   actualTableCount: number;
   missingTables: string[];
+  missingColumns: string[];
   extraTables: string[];
   expectedPermissionCount: number;
   actualPermissionCount: number;
@@ -76,7 +78,9 @@ export class LegacyDatabaseAuditService {
       (code) => !permissionCodes.has(code),
     );
 
+    const missingColumns = await missingMilkshopColumns(this.prisma);
     return {
+      missingColumns,
       expectedTableCount: LEGACY_TABLE_COUNT,
       actualTableCount: rows.length,
       missingTables,
@@ -86,7 +90,7 @@ export class LegacyDatabaseAuditService {
         RBAC_PERMISSION_CODES.length - missingPermissions.length,
       missingPermissions,
       compatible:
-        missingTables.length === 0 && missingPermissions.length === 0,
+        missingTables.length === 0 && missingPermissions.length === 0 && missingColumns.length === 0,
       lowerCaseTableNames,
       tableNameComparison: caseInsensitive ? "case-insensitive" : "case-sensitive",
     };
