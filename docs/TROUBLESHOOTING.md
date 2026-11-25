@@ -1,4 +1,6 @@
-# Troubleshooting
+# Troubleshooting — Web/API
+
+Chỉ áp dụng cho database thử nghiệm độc lập. Các hướng dẫn cũ liên quan ứng dụng đã loại bỏ không còn hiệu lực.
 
 ## Node API không khởi động vì thiếu `.env`
 
@@ -61,24 +63,6 @@ npm --prefix apps\api run db:audit
 
 Nếu tên bảng bị lệch casing trên Windows, audit phải tôn trọng `@@lower_case_table_names`; không tự rename bảng chỉ để làm audit xanh.
 
-## Mobile báo không kết nối được backend
-
-Backend runtime hiện tại là Node `:5300`.
-
-Kiểm tra theo thứ tự:
-
-1. Node API đang listening trên `5300`.
-2. `GET http://127.0.0.1:5300/health` trả thành công.
-3. Android emulator dùng `10.0.2.2:5300`.
-4. Physical device cùng LAN hoặc dùng USB ADB reverse.
-5. Windows Firewall cho phép TCP `5300` nếu đi LAN.
-6. Không cấu hình lại các port C# cũ 5053/5265/5089/5155.
-
-USB launcher hiện reverse:
-
-- `8081`
-- `5300`
-
 ## Trang Admin Khách hàng không hiển thị thống kê
 
 - `/admin/customers` gọi Node API `:5300`: `GET /api/admin/customers`, `GET /api/admin/customers/summary` và `GET /api/admin/customers/:id/analytics`. Các request dùng staff JWT.
@@ -87,34 +71,6 @@ USB launcher hiện reverse:
 - Số lượng khách/đơn và doanh thu tổng quan truy vấn tại MariaDB theo `NguoiDung.Id` và `DonHang.NguoiDungId`, không tính từ một trang danh sách phân trang.
 - Doanh thu, AOV, nhóm sản phẩm/danh mục mua nhiều chỉ tính đơn có `TrangThai='completed'`. Khách có đơn `pending/confirmed/shipping` sẽ có số đơn nhưng chi tiêu hoàn thành có thể bằng 0.
 - Với đơn đã hoàn thành mà vẫn không thấy ở khách, kiểm tra `NguoiDungId` và `TrangThai` bằng SQL chỉ đọc; không ghép theo Email hay sửa trạng thái order để tăng số liệu.
-
-## Expo Web vs Vite Web
-
-- `127.0.0.1:8081` -> Expo Web của `apps/mobile`
-- `localhost:5173` (thường) -> `apps/web`
-
-## Expo local executable thiếu
-
-`scripts/run-mobile.bat` kiểm tra `apps/mobile/node_modules/.bin/expo.cmd`. Nếu thiếu, script chạy `npm install`.
-
-## Mobile `/checkout` mất sản phẩm sau F5/reload
-
-Cart thật nằm ở backend; danh sách item được chọn cho partial checkout là state riêng. Từ D024, Mobile chỉ persist `CartItemIds` đã chọn để giữ continuity qua reload:
-
-- Expo Web: key `kaitokid_checkout_item_ids` trong `localStorage`;
-- Android/iOS: `expo-secure-store`;
-- sau Auth hydrate, Mobile tải cart thật từ API rồi chỉ giữ các ID vẫn còn hợp lệ;
-- logout chủ động xóa checkout selection đã persist.
-
-Nếu `/checkout` vẫn báo “Chưa có sản phẩm để thanh toán” sau reload:
-
-1. xác nhận phiên đăng nhập đã được restore và không bị logout;
-2. ở Expo Web, kiểm tra `localStorage.getItem('kaitokid_checkout_item_ids')` có danh sách ID sau khi bấm checkout từ Cart;
-3. xác nhận API cart vẫn trả các item tương ứng;
-4. nếu cart API lỗi tạm thời, không xóa selection để tránh mất dữ liệu do network transient;
-5. nếu item đã bị xóa/checkout ở nơi khác, ID stale sẽ bị loại khi đối chiếu với cart server.
-
-Không sửa lỗi này bằng cách persist toàn bộ Product/Cart snapshot, giá, tồn kho, coupon, shipping fee hoặc payment state làm nguồn dữ liệu chính. Các giá trị commerce phải được lấy/validate lại từ backend.
 
 ## Product/Lookbook media lỗi
 
@@ -191,44 +147,6 @@ npm --prefix apps\api run build
 
 Build hợp lệ tạo `apps/api/dist/main.js`, `dist/modules/*`, `dist/scripts/*`.
 
-## Expo Go thấy project khác hoặc QR / `exp://127.0.0.1:8081` không vào
-
-`apps/mobile/app.json` của repo này có app name `KaitoKid`. Nếu Expo Go chỉ liệt kê project khác như một dev server cũ ở `8081/8082/8083`, đó không phải bằng chứng KaitoKid đang chạy đúng.
-
-Launcher hiện bảo vệ flow này như sau:
-
-1. trước khi start Metro, `scripts/prepare-expo-port.ps1` kiểm tra `8081`;
-2. nếu `8081` đang do một Node process Expo/Metro cũ giữ, launcher dừng đúng listener cũ đó;
-3. nếu `8081` do process không phải Expo/Metro giữ, launcher **FAIL rõ ràng** thay vì để Expo tự nhảy sang `8082/8083`;
-4. với ADB authorized, launcher reverse `8081` + `5300` theo từng serial và chuyển Expo sang `--localhost`;
-5. không có ADB reverse thì launcher bỏ `EXPO_PACKAGER_PROXY_URL` localhost và dùng `--lan` thật.
-
-Kiểm tra USB:
-
-```bat
-adb devices
-```
-
-Mỗi điện thoại muốn dùng USB phải hiện trạng thái `device`, không phải `unauthorized`.
-
-Với một thiết bị:
-
-```bat
-adb reverse --list
-```
-
-Với nhiều thiết bị:
-
-```bat
-adb -s <SERIAL> reverse --list
-```
-
-Kỳ vọng có mapping `tcp:8081` và `tcp:5300`.
-
-- USB/ADB reverse OK: quét QR KaitoKid hoặc nhập `exp://127.0.0.1:8081`.
-- LAN mode: quét QR hoặc dùng `exp://<IP-LAN-CUA-PC>:8081`; **không** dùng `127.0.0.1` trên điện thoại thật.
-- Các server project khác còn hiện ở `8082/8083` là process của project khác trên LAN; không chọn chúng để mở KaitoKid.
-
 ## payOS không xuất hiện ở Checkout
 
 Online payment mới chỉ bật khi Node có đủ ba biến:
@@ -246,15 +164,6 @@ Kiểm tra `GET /api/payment/config`:
 - nếu `payosEnabled=false` trong payment settings thì ATM bị tắt dù credentials đúng.
 
 Các key `bankEnabled`, `enableBankTransfer`, `bankAccounts` hoặc VietQR legacy **không còn được phép bật ATM cho đơn mới**. Không sửa bằng cách bật lại manual VietQR fallback.
-
-## Mobile / Expo Web: hai nút xác nhận giao hàng không phản hồi
-
-- `/orders/[id]` trong PR #75 có nút nhận/chưa nhận khi backend trả `canConfirmReceived` hoặc `canReportNotReceived`.
-- Expo Web không hỗ trợ `Alert.alert()` như native; hai nút dùng `Modal` React Native để xác nhận trên Web, Android và iOS.
-- Nút `Để sau` không gọi API. Đồng ý mới gọi `POST /api/orders/:id/confirm-received` hoặc `POST /api/orders/:id/report-not-received` với token chủ đơn.
-- Khóa gửi lặp, hiển thị đang xử lý; thành công thông báo ngay trong màn hình và tải lại trạng thái đơn. Nếu thao tác thành công nhưng tải lại lỗi, vẫn báo thao tác đã ghi nhận và hướng dẫn kéo để làm mới.
-- Xác nhận nhận hàng mới chuyển `received_by_customer`/`completed`, bắt đầu cửa sổ hậu mãi server trả. Báo chưa nhận thành `delivery_disputed` để đối soát, không tự hủy hoặc hoàn kho.
-- Nghiệm thu trên Expo Web và Android/iOS: thử đồng ý/từ chối modal; xác nhận rằng chỉ đồng ý mới gửi 1 request; kiểm tra trạng thái và lịch sử vận chuyển trong DB.
 
 ## Ví KaitoKid không xuất hiện / API báo thiếu bảng
 
@@ -350,27 +259,3 @@ Khách phải xử lý/rút hết tiền và hoàn tất các yêu cầu đang c
 
 Runbook đầy đủ: `docs/runbooks/PAYOS_PAYMENT_E2E.md`.
 
-## Mobile / Expo Web POST /api/Auth/refresh trả HTTP 401
-
-- API `:5300` đã kết nối được; 401 nghĩa là refresh token bị từ chối, **không phải** lỗi Cloudflare, CORS hoặc LAN.
-- Backend hiện lưu 1 refresh token trên mỗi `NguoiDung`. Đăng nhập ở Web/thiết bị khác, đổi mật khẩu hoặc sau thời hạn `JWT_REFRESH_TOKEN_DAYS` (mặc định 7 ngày) có thể khiến refresh token cũ hết hiệu lực. Phải **đăng nhập lại một lần**; không tắt xác thực 401.
-- Mobile tự xóa session cũ khi refresh trả 401 và trở về chế độ guest; request 401 vẫn có thể xuất hiện trong Network của trình duyệt, nhưng app không log thêm `[KaitoKid Auth Error]` cho tình huống này.
-- Sự cố tạm thời (mất mạng, timeout hoặc API 5xx) **không xóa** refresh token đang lưu; lần gọi sau có thể thử lại. Không lưu token hoặc thông tin đăng nhập vào log.
-- Race login/refresh/restore được chặn bằng session generation và hàng đợi ghi storage để refresh cũ không ghi đè/xóa session đăng nhập mới.
-- Nếu UI vẫn hiển thị sai sau khi pull: dừng Expo, chạy `npx expo start --clear` trong `apps/mobile`, rồi thử đăng nhập mới. Không cần xóa toàn bộ storage của những người dùng khác.
-- `"shadow*" style props are deprecated` là cảnh báo React Native Web độc lập với 401; không ảnh hưởng refresh token.
-
-## Mobile / Expo Web thi thoảng timeout API :5300 trên LAN
-
-Triệu chứng: `GET /api/wallet`, Home, Cart hoặc Checkout đôi lúc báo hết thời gian dù request khác chạy được.
-
-- Trước tiên xác định **Node/DB chậm** hay **đường LAN lỗi**: chạy cùng lúc tại máy backend trong CMD:
-  `curl.exe -sS -m 8 -o NUL -w "localhost HTTP %{http_code} %{time_total}s\n" http://127.0.0.1:5300/health`
-  và
-  `curl.exe -sS -m 8 -o NUL -w "LAN HTTP %{http_code} %{time_total}s\n" http://10.243.156.66:5300/health`.
-  Thay IP LAN hiện tại theo `ipconfig`; lặp lại vài lần đúng khi lỗi xảy ra.
-- Localhost nhanh mà LAN lỗi: kiểm tra Wi-Fi/hotspot/Windows Firewall, IP `EXPO_PUBLIC_NODE_API_URL` và `EXPO_PUBLIC_API_URL`, thiết bị cùng mạng; USB authorized có thể dùng `adb reverse tcp:5300 tcp:5300`.
-- Cả localhost và LAN chậm: kiểm tra terminal NestJS có log `[API PERF] METHOD /api/resource HTTP STATUS NNNNms`; mặc định ghi request >= 4s và 5xx. Có thể đặt `API_SLOW_LOG_MS=2000` trong `apps/api/.env` để chẩn đoán. Dò truy vấn MariaDB, pool/lock transaction, external Lalamove/payOS và Node restart khi `start:dev`.
-- Mobile tự thử lại **tối đa 1 lần** khi lỗi transport trên các GET đọc dữ liệu đã cho phép (catalog, cart, ví, ...). Không retry POST/PUT/DELETE hoặc `GET /api/payment/instructions` vì có thể gây tác dụng phụ ở nhà cung cấp thanh toán.
-- Không kết luận thanh toán thất bại chỉ vì Mobile timeout: kiểm tra danh sách đơn/checkout status từ backend trước khi bấm Tạo đơn lần nữa.
-- HTTP 401, 400, 500 là phản hồi có thật từ server và không bị client tự retry. Không sửa bằng cách đặt balance hay order giả vào localStorage.

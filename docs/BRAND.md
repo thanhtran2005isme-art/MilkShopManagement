@@ -1,6 +1,6 @@
-# KaitoKid Brand Guide
+# Brand Guide — trạng thái kế thừa
 
-## Định vị hiện tại
+## Định vị kế thừa (chưa chuyển sang ngành sữa)
 
 **KaitoKid Shop Fashion là cửa hàng thời trang và phụ kiện cho nhiều lứa tuổi và giới tính.**
 
@@ -23,30 +23,9 @@ Ví dụ `GioiTinh=Nam + NhomTuoi=TreEm` là bé trai; `GioiTinh=Nu + NhomTuoi=N
 
 UI phải đọc size thật từ dữ liệu sản phẩm/biến thể, không giả định toàn catalog dùng một hệ size.
 
-## Mobile PHASE 1–9
-
-PHASE 1 trước đây đã chuẩn hóa **bộ seed Mobile hiện có** thành catalog trẻ em 0–12 tuổi để hoàn thiện nhanh luồng mua hàng Mobile. Đây là trạng thái dữ liệu mẫu của các phase đã triển khai, **không phải định vị toàn bộ KaitoKid Shop Fashion**.
-
-Vì vậy:
-
-- không dùng PHASE 1 làm lý do xóa nội dung nam/nữ người lớn khỏi Web;
-- không chạy migration kids-branding lên catalog đầy đủ nếu việc đó sẽ ghi đè dữ liệu người lớn mà chưa audit;
-- khi mở rộng Mobile parity với Web, phải hỗ trợ Nam/Nữ/Trẻ em theo dữ liệu thật.
-
 ## Nội dung và merchandising
 
 Copy, banner, collection, lookbook và recommendation phải theo đúng audience của sản phẩm đang hiển thị. Không áp copy dành cho trẻ em lên sản phẩm người lớn và ngược lại.
-
-## Màu UI Mobile hiện tại
-
-Mobile dùng `BRAND_COLORS` tại `apps/mobile/src/constants/brand.ts`:
-
-- Primary: `#7C3AED`
-- Primary dark: `#5B21B6`
-- Accent: `#F97316`
-- Canvas: `#F8FAFC`
-- Surface: `#FFFFFF`
-- Ink: `#111827`
 
 ## Quy tắc cho AI/GPT
 
