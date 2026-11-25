@@ -22,3 +22,7 @@ Chạy `npm run web:lint`, `npm run web:build`, `npm run backend:build` và `npm
 3. Thiết kế Test Case; Katalon Studio, JMeter, báo cáo PASS/FAIL.
 
 Tài liệu lịch sử được lưu trong docs/history; không dùng các hướng dẫn runtime cũ làm cấu hình hiện tại.
+
+## Tinh giản backend/UI (2026-11-25)
+- Gỡ các module độc lập của cửa hàng trực tuyến và controller CMS Admin không còn sử dụng. Chat, ví và tìm kiếm ảnh/gợi ý không được đăng ký API trong runtime. Giữ service ví, cart, payment, shipping và review kế thừa khi còn liên quan hợp đồng đơn hàng hoặc regression test; không xóa bảng trước khi thiết kế bán hàng tại quầy.
+- CI kiểm tra thêm contract Admin/RBAC và cấu trúc Web/API. Các harness realtime của dự án nguồn là di sản, không còn dùng để nghiệm thu phạm vi Web Admin hiện tại.

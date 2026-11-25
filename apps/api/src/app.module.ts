@@ -5,7 +5,6 @@ import { AccountModule } from "./modules/account/account.module.js";
 import { AdminModule } from "./modules/admin/admin.module.js";
 import { CategoriesModule } from "./modules/categories/categories.module.js";
 import { CartModule } from "./modules/cart/cart.module.js";
-import { ChatModule } from "./modules/chat/chat.module.js";
 import { IdentityModule } from "./modules/identity/identity.module.js";
 import { CouponModule } from "./modules/coupons/coupon.module.js";
 import { OrdersModule } from "./modules/orders/orders.module.js";
@@ -14,7 +13,6 @@ import { ShippingModule } from "./modules/shipping/shipping.module.js";
 import { NotificationsModule } from "./modules/notifications/notifications.module.js";
 import { ProductsModule } from "./modules/products/products.module.js";
 import { SearchModule } from "./modules/search/search.module.js";
-import { PublicExtrasModule } from "./modules/extras/public-extras.module.js";
 import { DatabaseModule } from "./database/database.module.js";
 import { HealthModule } from "./health/health.module.js";
 import { MigrationModule } from "./migration/migration.module.js";
@@ -27,9 +25,7 @@ import { MigrationModule } from "./migration/migration.module.js";
     MediaModule,
     HealthModule,
     IdentityModule,
-    ChatModule,
     SearchModule,
-    PublicExtrasModule,
     AdminModule,
     ProductsModule,
     CategoriesModule,

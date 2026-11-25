@@ -26,15 +26,14 @@ test("live catalog public trả dữ liệu qua Node", async () => {
   assert.ok(json !== null && json !== undefined);
 });
 
-test("image search soft-status không làm API chết khi thiếu ONNX", async () => {
-  const response = await request("/api/search/by-image/status");
-  const json = await response.json();
-  assert.equal(typeof json.ready, "boolean");
+test("API tìm kiếm ảnh đã bị gỡ khỏi runtime", async () => {
+  const response = await fetch(`${baseUrl}/api/search/by-image/status`, { signal: AbortSignal.timeout(10_000) });
+  assert.equal(response.status, 404);
 });
 
 test("shared apps/web/public media được serve qua Node", async () => {
-  const response = await request("/slide_1.jpg");
-  assert.match(response.headers.get("content-type") ?? "", /image\/jpeg/i);
+  const response = await request("/images/logokaitokid.png");
+  assert.match(response.headers.get("content-type") ?? "", /image\/png/i);
   const bytes = new Uint8Array(await response.arrayBuffer());
   assert.ok(bytes.byteLength > 1000);
 });

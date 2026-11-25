@@ -144,3 +144,7 @@ Các race gate có thể tạo backup dưới `.runtime-backups/`; thư mục n�
 7. `docs/DECISIONS.md` và `docs/decisions/`
 8. `docs/TROUBLESHOOTING.md`
 9. Git history + source liên quan
+
+## Phạm vi sau tinh giản
+
+Chỉ kiểm thử Web Admin. API của chat, ví điện tử, CMS và tìm kiếm hình ảnh không còn được đăng ký. Các service đơn hàng/hoàn tiền/checkout kế thừa và schema SQL vẫn giữ để tránh mất dữ liệu hoặc phá luồng hiện hữu trước khi xây dựng bán hàng tại quầy. Không chạy bộ nghiệm thu chat realtime cũ.
