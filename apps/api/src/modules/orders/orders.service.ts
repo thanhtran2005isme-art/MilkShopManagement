@@ -197,6 +197,10 @@ export class OrdersService {
         cartRows.map((item) => toNumber(item.productId)),
       )].sort((a, b) => a - b);
       await this.lockInventory(tx, productIds);
+      for (const id of productIds) {
+        const lots=await tx.$queryRawUnsafe<Array<{Id:unknown}>>("SELECT Id FROM LoHang WHERE SanPhamId=? LIMIT 1",id);
+        if(lots.length) throw new BadRequestException("Sản phẩm theo lô chỉ bán tại quầy.");
+      }
 
       const lockedCart = await this.loadCheckoutCart(
         tx,

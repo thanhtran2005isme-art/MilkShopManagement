@@ -160,8 +160,7 @@ export default function AdminStockReceiptDetail() {
               <tr style={{ background: '#f8fafc' }}>
                 <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600, width: 40 }}>#</th>
                 <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Sản phẩm</th>
-                <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600, width: 80 }}>Size</th>
-                <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600, width: 100 }}>Màu</th>
+                <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600, width: 80 }}>Mã lô</th><th>NSX</th><th>HSD</th>
                 <th style={{ padding: 10, textAlign: 'center', fontSize: 13, fontWeight: 600, width: 80 }}>SL</th>
                 <th style={{ padding: 10, textAlign: 'right', fontSize: 13, fontWeight: 600, width: 130 }}>Đơn giá</th>
                 <th style={{ padding: 10, textAlign: 'right', fontSize: 13, fontWeight: 600, width: 130 }}>Thành tiền</th>
@@ -172,8 +171,7 @@ export default function AdminStockReceiptDetail() {
                 <tr key={c.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: 10, fontSize: 13, color: '#64748b' }}>{idx + 1}</td>
                   <td style={{ padding: 10, fontSize: 14, fontWeight: 600 }}>{c.tenSanPham}</td>
-                  <td style={{ padding: 10, fontSize: 13 }}>{c.kichCo || '—'}</td>
-                  <td style={{ padding: 10, fontSize: 13 }}>{c.mauSac || '—'}</td>
+                  <td style={{ padding: 10 }}>{c.maLo || '—'}</td><td style={{ padding: 10 }}>{c.ngaySanXuat?.slice(0,10) || '—'}</td><td style={{ padding: 10 }}>{c.hanSuDung?.slice(0,10) || '—'}</td>
                   <td style={{ padding: 10, textAlign: 'center', fontSize: 14, fontWeight: 600 }}>{c.soLuong}</td>
                   <td style={{ padding: 10, textAlign: 'right', fontSize: 13 }}>{formatCurrency(c.donGiaNhap)}</td>
                   <td style={{ padding: 10, textAlign: 'right', fontSize: 14, fontWeight: 700 }}>
@@ -184,7 +182,7 @@ export default function AdminStockReceiptDetail() {
             </tbody>
             <tfoot>
               <tr style={{ background: '#f8fafc', fontWeight: 700 }}>
-                <td colSpan={4} style={{ padding: 12, textAlign: 'right' }}>Tổng cộng:</td>
+                <td colSpan={5} style={{ padding: 12, textAlign: 'right' }}>Tổng cộng:</td>
                 <td style={{ padding: 12, textAlign: 'center' }}>
                   {data.chiTiet.reduce((s, c) => s + c.soLuong, 0)}
                 </td>

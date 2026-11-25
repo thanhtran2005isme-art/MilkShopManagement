@@ -18,9 +18,12 @@ const salesSource = source("../src/modules/admin/admin-content-sales.controller.
 const moreSource = source("../src/modules/admin/admin-content-more.controller.ts");
 const catalogSource = source("../src/modules/admin/admin-catalog.controller.ts");
 const operationsSource = source("../src/modules/admin/admin-operations.controller.ts");
-const allSource = [baseSource, salesSource, moreSource, catalogSource, operationsSource].join("\n");
+const milkshopSource=source("../src/modules/admin/admin-milkshop.controller.ts");
+const allSource = [milkshopSource, baseSource, salesSource, moreSource, catalogSource, operationsSource].join("\n");
 
 const expectedControllers = [
+  "AdminLotsController",
+  "AdminPosController",
   "AdminAttributesController",
   "AdminCategoriesController",
   "AdminCouponsController",
@@ -37,6 +40,8 @@ const expectedControllers = [
 ];
 
 const expectedRoutes = [
+  "api/admin/lots",
+  "api/admin/pos",
   "api/admin/attributes",
   "api/admin/categories",
   "api/admin/coupons",
@@ -52,9 +57,9 @@ const expectedRoutes = [
   "api/admin/variant-stock",
 ];
 
-test("Admin đăng ký đúng 13 controller nghiệp vụ còn sử dụng", () => {
-  assert.equal(expectedControllers.length, 13);
-  assert.equal(expectedRoutes.length, 13);
+test("Admin đăng ký đúng 15 controller nghiệp vụ còn sử dụng", () => {
+  assert.equal(expectedControllers.length, 15);
+  assert.equal(expectedRoutes.length, 15);
   for (const name of expectedControllers) assert.match(moduleSource, new RegExp(`\\b${name}\\b`));
   for (const name of ["AdminBannersController","AdminCollectionsController","AdminFlashSalesController","FlashSalesController","AdminHomepageBlocksController","AdminHomepageController","AdminLookbookController","AdminMenusController","AdminPagesController","AdminReviewsController"]) assert.doesNotMatch(moduleSource, new RegExp(`\\b${name}\\b`));
   for (const route of ['banners','collections','flash-sales','homepage','homepage-blocks','lookbook','menus','pages','reviews']) assert.ok(!allSource.includes(`@Controller("api/admin/${route}")`));

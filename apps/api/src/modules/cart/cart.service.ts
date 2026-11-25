@@ -150,6 +150,8 @@ export class CartService {
     return this.prisma.$transaction(async (tx) => {
       await this.lockUser(tx, userId);
       const product = await this.lockProduct(tx, input.productId);
+      const lots = await tx.$queryRawUnsafe<Array<{Id:unknown}>>("SELECT Id FROM LoHang WHERE SanPhamId=? LIMIT 1",input.productId);
+      if(lots.length) throw new BadRequestException("Sản phẩm theo lô chỉ bán tại quầy.");
       if (!product) throw new BadRequestException("Sản phẩm không tồn tại");
       if (product.status !== "active") {
         throw new BadRequestException("Sản phẩm hiện không thể thêm vào giỏ hàng");
@@ -296,6 +298,8 @@ export class CartService {
 
       const productId = toNumber(lookup[0].productId);
       const product = await this.lockProduct(tx, productId);
+      const lots = await tx.$queryRawUnsafe<Array<{Id:unknown}>>("SELECT Id FROM LoHang WHERE SanPhamId=? LIMIT 1",productId);
+      if(lots.length) throw new BadRequestException("Sản phẩm theo lô chỉ bán tại quầy.");
       if (!product) return null;
 
       await tx.$queryRawUnsafe(

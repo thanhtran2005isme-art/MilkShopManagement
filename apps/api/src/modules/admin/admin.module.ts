@@ -1,3 +1,4 @@
+import { AdminLotsController, AdminPosController } from "./admin-milkshop.controller.js";
 import { Module } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { WalletModule } from "../wallet/wallet.module.js";
@@ -34,6 +35,8 @@ import { AdminVietQrService } from "./admin-vietqr.service.js";
 @Module({
   imports: [WalletModule],
   controllers: [
+    AdminLotsController,
+    AdminPosController,
     AdminAttributesController,
     AdminCategoriesController,
     AdminCouponsController,

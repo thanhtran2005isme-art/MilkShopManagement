@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import AdminIcon from '../components/admin/AdminIcon';
 import AdminAfterSalesPanel from './AdminAfterSalesPanel';
@@ -14,6 +14,7 @@ type StatusFilter = 'all' | AdminOrderStatus;
 type AdminOrder = Omit<OrderDTO, 'status'> & {
   status: AdminOrderStatus;
   numericId: number;
+  kenhBan?: string;
 };
 
 const STATUS_META: Record<
@@ -54,6 +55,7 @@ function mapOrder(raw: any): AdminOrder {
   return {
     id: raw.maDonHang || raw.id?.toString() || '',
     numericId: Number(raw.id),
+    kenhBan: raw.kenhBan,
     customerName: raw.tenNguoiNhan || '',
     customerPhone: raw.soDienThoai || '',
     customerEmail: raw.email || '',
@@ -88,6 +90,7 @@ function getStatusFilter(value: string | null): StatusFilter {
 
 function getPaymentMeta(method?: string) {
   const normalized = (method || '').toLowerCase();
+  if (normalized === 'cash') return { label: 'Tiền mặt', icon: 'fa-wallet', tone: 'cod' as const };
   if (normalized.includes('cod')) return { label: 'COD', icon: 'fa-wallet', tone: 'cod' as const };
   if (normalized.includes('momo')) return { label: 'MoMo', icon: 'fa-credit-card', tone: 'momo' as const };
   if (normalized.includes('bank') || normalized.includes('atm') || normalized.includes('chuyển')) {
@@ -422,7 +425,7 @@ export default function AdminOrders() {
                   <div className="orders-modal-summary-card"><span>Phí vận chuyển</span><strong>{selected.shippingFee === 0 ? 'Miễn phí' : formatCurrency(selected.shippingFee)}</strong></div>
                 </div>
 
-                {writableTransitions(selected.status).length > 0 && (
+                {selected.kenhBan !== 'pos' && writableTransitions(selected.status).length > 0 && (
                   <div className="orders-modal-controls">
                     <div className="orders-status-actions">
                       {writableTransitions(selected.status).map((next) => (
@@ -458,10 +461,10 @@ export default function AdminOrders() {
 
                 {selected.note && <div className="orders-note-card"><div className="orders-card-kicker">Ghi chú từ khách</div><p>{selected.note}</p></div>}
 
-                <AdminAfterSalesPanel
+                {selected.kenhBan === 'pos' ? <Link className="btn btn-outline" to={'/admin/pos?invoice='+selected.numericId}>Xem và in hóa đơn</Link> : <AdminAfterSalesPanel
                   orderId={selected.numericId}
                   onChanged={() => reload(selected.numericId)}
-                />
+                />}
 
                 <div className="order-items">
                   <h4>Sản phẩm trong đơn ({selected.items.length})</h4>

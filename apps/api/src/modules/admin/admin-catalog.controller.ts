@@ -18,6 +18,7 @@ import type { AuthenticatedUser } from "../../auth/authenticated-user.js";
 import { JwtAuthGuard } from "../../auth/jwt-auth.guard.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import { assertStaffPermission } from "../identity/staff-permissions.js";
+import { assertUntrackedInventory } from "./milkshop-lot-utils.js";
 import { AdminStaffGuard } from "./admin-staff.guard.js";
 import {
   bool,
@@ -301,7 +302,15 @@ export class AdminProductsController {
   @Put(":id")
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string, @Body() body: JsonRecord) {
     assertStaffPermission(user, "products.update");
-    return updateRow(this.prisma, "SanPham", intPath(rawId), this.values(body));
+    return this.prisma.$transaction(async tx => {
+      const id=intPath(rawId);
+      const row=(await tx.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM SanPham WHERE Id=? FOR UPDATE",id))[0];
+      if(!row) throw new NotFoundException();
+      const values=this.values(body);
+      if(bodyValue(body,"TonKho")===undefined) delete values.TonKho;
+      else if(Number(values.TonKho)!==Number(row.TonKho)) await assertUntrackedInventory(tx,id);
+      return updateRow(tx,"SanPham",id,values);
+    });
   }
 
   @Delete(":id")

@@ -8,6 +8,9 @@ export interface StockReceiptItemDTO {
   tenSanPham: string;
   kichCo?: string;
   mauSac?: string;
+  maLo?: string;
+  ngaySanXuat?: string;
+  hanSuDung?: string;
   soLuong: number;
   donGiaNhap: number;
   thanhTien: number;
@@ -54,6 +57,9 @@ export interface CreateStockReceiptItemPayload {
   sanPhamId: number;
   kichCo?: string;
   mauSac?: string;
+  maLo?: string;
+  ngaySanXuat?: string;
+  hanSuDung?: string;
   soLuong: number;
   donGiaNhap: number;
   ghiChu?: string;

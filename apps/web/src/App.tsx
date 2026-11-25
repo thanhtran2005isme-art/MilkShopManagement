@@ -27,6 +27,8 @@ import AdminSettings from './admin/AdminSettings';
 import AdminLogin from './admin/AdminLogin';
 import AdminStaff from './admin/AdminStaff';
 import AdminRoles from './admin/AdminRoles';
+import AdminLots from './admin/AdminLots';
+import AdminPOS from './admin/AdminPOS';
 import './App.css';
 import './styles/admin-staff.css';
 
@@ -51,6 +53,8 @@ export default function App() {
                   <Route path="categories" element={<AdminCategories />} />
                   <Route path="attributes" element={<AdminAttributes />} />
                   <Route path="inventory" element={<AdminInventory />} />
+                  <Route element={<AdminProtectedRoute permission="inventory.view" />}><Route path="inventory/lots" element={<AdminLots />} /></Route>
+                  <Route element={<AdminProtectedRoute permission="orders.update_status" />}><Route path="pos" element={<AdminPOS />} /></Route>
                   <Route path="inventory/history" element={<AdminInventoryHistory />} />
                   <Route path="inventory/alerts" element={<AdminInventoryAlerts />} />
                   <Route path="suppliers" element={<AdminSuppliers />} />

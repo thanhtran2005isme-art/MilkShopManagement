@@ -1,0 +1,5 @@
+# Contract API POS và lô hàng
+Base /api/admin; Bearer JWT staff. Permission inventory.view: GET /lots?search=&status=attention|available|expiring|expired|empty|discarded|cancelled|all&page=1&pageSize=20 (items, total, page, pageSize, summary, today). inventory.manage: POST /lots/:id/discard {lyDo}, hủy toàn bộ tồn còn lại của lô hết hạn.
+orders.update_status: GET /pos/products?search=&page=1; POST /pos/sales {requestId,tenKhach,phuongThucThanhToan:"cash"|"bank",giamGia,tienKhachDua,items:[{sanPhamId,soLuong}]}. Server tự tính giá/tổng theo CSDL và phân bổ FEFO. Idempotency theo requestId + staff + hash payload; retry cùng payload trả hóa đơn cũ; mã trùng khác payload trả 409. orders.view: GET /pos/sales/:id.
+stock_receipts.create: POST /stock-receipts {items:[{sanPhamId,soLuong,donGiaNhap,maLo,ngaySanXuat:"YYYY-MM-DD",hanSuDung:"YYYY-MM-DD"}],nhaCungCapId?,ngayNhap?}. HSD > hôm nay, NSX <= ngày nhập và trước HSD.
+400 validation/không đủ tồn; 401 chưa đăng nhập; 403 thiếu quyền; 404 không tìm thấy; 409 xung đột. POST trả 201. Không giả lập thanh toán hoặc dữ liệu tồn. Hóa đơn nội bộ in từ trình duyệt, không phải hóa đơn điện tử thuế.

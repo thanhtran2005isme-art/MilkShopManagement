@@ -208,6 +208,7 @@ export default function AdminInventoryAlerts() {
       <div className="page-header">
         <h1>Cảnh báo tồn kho</h1>
         <div className="page-actions">
+          <Link to="/admin/inventory/lots?status=attention" className="btn btn-outline">Cảnh báo hạn sử dụng</Link>
           <Link to="/admin/inventory" className="btn btn-outline">
             <AdminIcon name="fa fa-warehouse" /> Quay lại tồn kho
           </Link>

@@ -446,6 +446,8 @@ export class AdminOrderAfterSalesService {
   }
 
   private async lockOrder(tx: SqlClient, orderId: number): Promise<OrderRow> {
+    const pos=await tx.$queryRawUnsafe<Array<{Id:unknown}>>("SELECT Id FROM DonHang WHERE Id=? AND KenhBan='pos' FOR UPDATE",orderId);
+    if(pos.length) throw new BadRequestException("Hóa đơn tại quầy không dùng luồng hậu mãi trực tuyến.");
     const rows = await tx.$queryRawUnsafe<OrderRow[]>(
       `SELECT Id AS id, NguoiDungId AS userId, MaDonHang AS orderCode,
               TrangThai AS orderStatus, TrangThaiVanChuyen AS shippingStatus,

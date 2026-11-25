@@ -126,6 +126,7 @@ export default function AdminInventory() {
         </div>
 
         <div className="inventory-ops-hero-actions">
+          <Link to="/admin/inventory/lots" className="inventory-ops-link is-outline">Lô hàng & hạn sử dụng</Link>
           <Link to="/admin/inventory/history" className="inventory-ops-link">
             <AdminIcon name="fa-history" />
             <span>Lịch sử nhập / xuất</span>

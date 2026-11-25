@@ -18,6 +18,7 @@ import { JwtAuthGuard } from "../../auth/jwt-auth.guard.js";
 import type { SqlClient } from "../../common/sql-client.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import { assertStaffPermission } from "../identity/staff-permissions.js";
+import { assertUntrackedInventory, receiptLot, vietnamDate } from "./milkshop-lot-utils.js";
 import { AdminStaffGuard } from "./admin-staff.guard.js";
 import {
   bodyValue,
@@ -109,6 +110,7 @@ export class AdminInventoryController {
       const rows = await tx.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM SanPham WHERE Id=? LIMIT 1 FOR UPDATE", productId);
       if (!rows[0]) throw new NotFoundException();
       const product = rows[0];
+      await assertUntrackedInventory(tx, productId);
       const before = Number(product.TonKho ?? 0);
       let after: number;
       try {
@@ -238,6 +240,7 @@ export class AdminOrdersController {
       const rows = await tx.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM DonHang WHERE Id=? LIMIT 1 FOR UPDATE", id);
       if (!rows[0]) throw new NotFoundException();
       const order = rows[0];
+      if (order.KenhBan === "pos") throw new BadRequestException("Đơn tại quầy đã thanh toán; không đổi trạng thái bằng luồng giao hàng cũ.");
       const previous = String(order.TrangThai ?? "");
       const now = new Date();
 
@@ -369,6 +372,7 @@ export class AdminVariantStockController {
       const products = await tx.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM SanPham WHERE Id=? LIMIT 1 FOR UPDATE", productId);
       if (!products[0]) throw new NotFoundException({ error: "Sản phẩm không tồn tại." });
       const product = products[0];
+      await assertUntrackedInventory(tx, productId);
       const oldQuantity = Number(variant.SoLuong ?? 0);
       const diff = newQuantity - oldQuantity;
       const productBefore = Number(product.TonKho ?? 0);
@@ -404,6 +408,7 @@ export class AdminStockReceiptsController {
 
   @Get()
   async all(
+    @CurrentUser() user: AuthenticatedUser,
     @Query("search") search?: string,
     @Query("supplierId") rawSupplierId?: string,
     @Query("fromDate") rawFrom?: string,
@@ -411,6 +416,7 @@ export class AdminStockReceiptsController {
     @Query("page") rawPage?: string,
     @Query("pageSize") rawPageSize?: string,
   ) {
+    permission(user, "stock_receipts.view");
     const { page, pageSize, offset } = pageValues(rawPage, rawPageSize);
     const clauses: string[] = [];
     const params: unknown[] = [];
@@ -443,7 +449,8 @@ export class AdminStockReceiptsController {
   }
 
   @Get(":id")
-  async one(@Param("id") rawId: string) {
+  async one(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string) {
+    permission(user, "stock_receipts.view");
     const id = intPath(rawId);
     const receipts = await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM PhieuNhap WHERE Id=? LIMIT 1", id);
     if (!receipts[0]) throw new NotFoundException();
@@ -455,14 +462,17 @@ export class AdminStockReceiptsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@CurrentUser() user: AuthenticatedUser, @Body() body: JsonRecord) {
+    permission(user, "stock_receipts.create");
     const rawItems = bodyValue(body, "Items");
-    if (!Array.isArray(rawItems) || rawItems.length === 0) throw new BadRequestException({ error: "Phiếu nhập phải có ít nhất 1 dòng sản phẩm." });
+    if (!Array.isArray(rawItems) || rawItems.length === 0 || rawItems.length > 100) throw new BadRequestException({ error: "Phiếu nhập phải có ít nhất 1 dòng sản phẩm." });
     const items = rawItems as JsonRecord[];
     for (const item of items) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) throw new BadRequestException("Dòng nhập không hợp lệ.");
+      receiptLot(item);
       const quantity = num(item, "SoLuong", -1);
       const cost = num(item, "DonGiaNhap", -1);
-      if (!Number.isSafeInteger(quantity) || quantity <= 0) throw new BadRequestException({ error: "Số lượng mỗi dòng phải lớn hơn 0." });
-      if (!Number.isFinite(cost) || cost < 0) throw new BadRequestException({ error: "Đơn giá nhập không được âm." });
+      if (!Number.isSafeInteger(quantity) || quantity <= 0 || quantity > 100000) throw new BadRequestException({ error: "Số lượng mỗi dòng phải lớn hơn 0." });
+      if (!Number.isSafeInteger(cost) || cost < 0 || cost > 1000000000) throw new BadRequestException({ error: "Đơn giá nhập không được âm." });
       if (cost === 0) throw new BadRequestException({ error: "Đơn giá nhập không được bằng 0. Vui lòng nhập giá nhập hàng." });
     }
 
@@ -481,6 +491,7 @@ export class AdminStockReceiptsController {
       for (const productId of productIds) {
         const rows = await tx.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM SanPham WHERE Id=? LIMIT 1 FOR UPDATE", productId);
         if (!rows[0]) throw new BadRequestException({ error: `Sản phẩm không tồn tại: ${productId}` });
+        if (Number(rows[0].SoLuongDaGiu ?? 0)>0) throw new BadRequestException("Sản phẩm còn giữ chỗ từ luồng cũ.");
         products.set(productId, rows[0]);
       }
 
@@ -497,7 +508,8 @@ export class AdminStockReceiptsController {
       const receiptDateRaw = bodyValue(body, "NgayNhap");
       const receiptDate = receiptDateRaw === undefined || receiptDateRaw === null || receiptDateRaw === "" ? now : new Date(String(receiptDateRaw));
       if (Number.isNaN(receiptDate.getTime())) throw new BadRequestException({ error: "NgayNhap không hợp lệ." });
-      const importer = text(body, "NguoiNhap").trim() || staffName(user);
+      if (vietnamDate(receiptDate)>vietnamDate(now)) throw new BadRequestException("Ngày nhập không được ở tương lai.");
+      const importer = staffName(user);
       const receiptId = await insertRow(tx, "PhieuNhap", {
         MaPhieu: receiptCode,
         NhaCungCapId: supplierId,
@@ -519,19 +531,26 @@ export class AdminStockReceiptsController {
         const cost = num(item, "DonGiaNhap");
         const lineTotal = quantity * cost;
         totalValue += lineTotal;
+        const lot = receiptLot(item, vietnamDate(receiptDate));
         const size = nullableText(item, "KichCo")?.trim() || null;
         const color = nullableText(item, "MauSac")?.trim() || null;
-        await insertRow(tx, "ChiTietPhieuNhap", {
+        if (size || color) throw new BadRequestException("Phiếu nhập sữa không dùng size/màu.");
+        const detailId = await insertRow(tx, "ChiTietPhieuNhap", {
           PhieuNhapId: receiptId,
           SanPhamId: productId,
           TenSanPham: String(product.TenSanPham ?? ""),
           KichCo: size,
           MauSac: color,
+          MaLo: lot.maLo,
+          NgaySanXuat: lot.ngaySanXuat,
+          HanSuDung: lot.hanSuDung,
           SoLuong: quantity,
           DonGiaNhap: cost,
           ThanhTien: lineTotal,
           GhiChu: nullableText(item, "GhiChu"),
         });
+
+        await insertRow(tx, "LoHang", {SanPhamId:productId,ChiTietPhieuNhapId:detailId,MaLo:lot.maLo,NgaySanXuat:lot.ngaySanXuat,HanSuDung:lot.hanSuDung,SoLuongNhap:quantity,SoLuongCon:quantity,GiaNhap:cost});
 
         if (size && color) {
           const variants = await tx.$queryRawUnsafe<JsonRecord[]>(
@@ -594,6 +613,7 @@ export class AdminStockReceiptsController {
     @Body() body?: JsonRecord,
   ) {
     const id = intPath(rawId);
+    permission(user, "stock_receipts.cancel");
     const payload = body ?? {};
     const reason = nullableText(payload, "LyDo")?.trim() || null;
     return this.prisma.$transaction(async (tx) => {
@@ -610,6 +630,11 @@ export class AdminStockReceiptsController {
         if (!products[0]) continue;
         const product = products[0];
         const before = Number(product.TonKho ?? 0);
+        const lot = (await tx.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM LoHang WHERE ChiTietPhieuNhapId=? FOR UPDATE",Number(detail.Id)))[0];
+        if (lot) {
+          if (lot.TrangThai!=="active" || Number(lot.SoLuongCon)!==quantity || before-quantity<Number(product.SoLuongDaGiu??0)) throw new BadRequestException("Không hủy phiếu có lô đã bán, đã hủy hoặc không đủ tồn.");
+          await tx.$executeRawUnsafe("UPDATE LoHang SET SoLuongCon=0,TrangThai='cancelled' WHERE Id=?",Number(lot.Id));
+        } else { await assertUntrackedInventory(tx,productId); }
         const after = floorAtZero(before - quantity);
         const status = after === 0 ? "out-of-stock" : String(product.TrangThai ?? "active");
         await tx.$executeRawUnsafe("UPDATE SanPham SET TonKho=?, TrangThai=?, NgayCapNhat=? WHERE Id=?", after, status, now, productId);

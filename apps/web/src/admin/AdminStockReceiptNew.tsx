@@ -16,8 +16,9 @@ interface ReceiptLine extends CreateStockReceiptItemPayload {
   uid: string;
   tenSanPham: string;
   hinhAnh?: string;
-  availableSizes: string[];
-  availableColors: string[];
+  maLo: string;
+  ngaySanXuat: string;
+  hanSuDung: string;
 }
 
 function formatCurrency(v: number) {
@@ -34,10 +35,9 @@ function createReceiptLine(product: Product): ReceiptLine {
     sanPhamId: product.id,
     tenSanPham: product.name,
     hinhAnh: product.image,
-    availableSizes: product.sizes || [],
-    availableColors: product.colors || [],
-    kichCo: (product.sizes && product.sizes.length > 0) ? product.sizes[0] : '',
-    mauSac: (product.colors && product.colors.length > 0) ? product.colors[0] : '',
+    maLo: '',
+    ngaySanXuat: '',
+    hanSuDung: '',
     soLuong: 1,
     donGiaNhap: 0,
     ghiChu: '',
@@ -186,6 +186,9 @@ export default function AdminStockReceiptNew() {
       return;
     }
     for (const line of lines) {
+      if (!line.maLo.trim() || !line.ngaySanXuat || !line.hanSuDung || line.ngaySanXuat >= line.hanSuDung) {
+        notify({ tone: 'error', message: `Nhập mã lô, NSX và HSD hợp lệ cho ${line.tenSanPham}.` }); return;
+      }
       if (line.soLuong <= 0) {
         notify({ tone: 'error', message: `Sản phẩm "${line.tenSanPham}" có số lượng <= 0.` });
         return;
@@ -209,8 +212,9 @@ export default function AdminStockReceiptNew() {
       ghiChu: ghiChu.trim() || undefined,
       items: lines.map((l) => ({
         sanPhamId: l.sanPhamId,
-        kichCo: l.kichCo && l.kichCo.trim() ? l.kichCo.trim() : undefined,
-        mauSac: l.mauSac && l.mauSac.trim() ? l.mauSac.trim() : undefined,
+        maLo: l.maLo.trim(),
+        ngaySanXuat: l.ngaySanXuat,
+        hanSuDung: l.hanSuDung,
         soLuong: l.soLuong,
         donGiaNhap: l.donGiaNhap,
         ghiChu: l.ghiChu && l.ghiChu.trim() ? l.ghiChu.trim() : undefined,
@@ -333,8 +337,7 @@ export default function AdminStockReceiptNew() {
                 <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
                   <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600, width: 40 }}>#</th>
                   <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600 }}>Sản phẩm</th>
-                  <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600, width: 100 }}>Size</th>
-                  <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600, width: 120 }}>Màu</th>
+                  <th style={{ padding: 10, textAlign: 'left', fontSize: 13, fontWeight: 600, width: 100 }}>Mã lô</th><th>Ngày sản xuất</th><th>Hạn sử dụng</th>
                   <th style={{ padding: 10, textAlign: 'center', fontSize: 13, fontWeight: 600, width: 90 }}>SL</th>
                   <th style={{ padding: 10, textAlign: 'right', fontSize: 13, fontWeight: 600, width: 130 }}>Đơn giá</th>
                   <th style={{ padding: 10, textAlign: 'right', fontSize: 13, fontWeight: 600, width: 130 }}>Thành tiền</th>
@@ -353,46 +356,9 @@ export default function AdminStockReceiptNew() {
                         <span style={{ fontSize: 13, fontWeight: 600 }}>{line.tenSanPham}</span>
                       </div>
                     </td>
-                    <td style={{ padding: 8 }}>
-                      {line.availableSizes.length > 0 ? (
-                        <select
-                          value={line.kichCo || ''}
-                          onChange={(e) => updateLine(line.uid, { kichCo: e.target.value })}
-                          style={{ width: '100%', padding: 6, border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 13 }}
-                        >
-                          <option value="">—</option>
-                          {line.availableSizes.map((s) => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          value={line.kichCo || ''}
-                          onChange={(e) => updateLine(line.uid, { kichCo: e.target.value })}
-                          placeholder="—"
-                          style={{ width: '100%', padding: 6, border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 13 }}
-                        />
-                      )}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      {line.availableColors.length > 0 ? (
-                        <select
-                          value={line.mauSac || ''}
-                          onChange={(e) => updateLine(line.uid, { mauSac: e.target.value })}
-                          style={{ width: '100%', padding: 6, border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 13 }}
-                        >
-                          <option value="">—</option>
-                          {line.availableColors.map((c) => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          value={line.mauSac || ''}
-                          onChange={(e) => updateLine(line.uid, { mauSac: e.target.value })}
-                          placeholder="—"
-                          style={{ width: '100%', padding: 6, border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 13 }}
-                        />
-                      )}
-                    </td>
+                    <td style={{ padding:8 }}><input className="form-control" aria-label={`Mã lô dòng ${idx+1}`} value={line.maLo} maxLength={80} onChange={e=>updateLine(line.uid,{maLo:e.target.value})} required /></td>
+                    <td style={{ padding:8 }}><input className="form-control" aria-label={`Ngày sản xuất dòng ${idx+1}`} type="date" value={line.ngaySanXuat} onChange={e=>updateLine(line.uid,{ngaySanXuat:e.target.value})} required /></td>
+                    <td style={{ padding:8 }}><input className="form-control" aria-label={`Hạn sử dụng dòng ${idx+1}`} type="date" value={line.hanSuDung} onChange={e=>updateLine(line.uid,{hanSuDung:e.target.value})} required /></td>
                     <td style={{ padding: 8, textAlign: 'center' }}>
                       <input
                         type="number"
