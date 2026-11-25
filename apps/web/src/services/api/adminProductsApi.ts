@@ -10,6 +10,12 @@ import type { Product } from '../../types';
 // Backend SanPham DTO
 export interface SanPhamDTO {
   id: number;
+  thuongHieu?: string;
+  dungTichMl?: number | null;
+  khoiLuongG?: number | null;
+  huongVi?: string;
+  maVach?: string;
+  donViTinh?: string;
   tenSanPham: string;
   danhMucId?: number;
   danhMuc: string;
@@ -106,6 +112,12 @@ function mapSanPhamToProduct(dto: SanPhamDTO): Product {
   return {
     id: dto.id,
     name: dto.tenSanPham,
+    brand: dto.thuongHieu,
+    volumeMl: dto.dungTichMl,
+    weightG: dto.khoiLuongG,
+    flavor: dto.huongVi,
+    barcode: dto.maVach,
+    unit: dto.donViTinh,
     category: dto.danhMuc,
     subcategory: dto.danhMucPhu,
     style: dto.phongCach,
@@ -143,14 +155,20 @@ function mapSanPhamToProduct(dto: SanPhamDTO): Product {
 function mapProductToSanPham(product: Partial<Product>): Partial<SanPhamDTO> {
   return {
     tenSanPham: product.name || '',
-    danhMuc: product.category || 'Ao',
+    thuongHieu: product.brand,
+    dungTichMl: product.volumeMl,
+    khoiLuongG: product.weightG,
+    huongVi: product.flavor,
+    maVach: product.barcode,
+    donViTinh: product.unit,
+    danhMuc: product.category || 'Sữa tươi',
     danhMucPhu: product.subcategory,
     phongCach: product.style,
     nhomTuoi: product.ageGroup,
     gioiTinh: product.gender || 'Unisex',
     gia: product.price || 0,
     giaCu: product.oldPrice || undefined,
-    tonKho: product.stock || 0,
+    tonKho: product.stock,
     trangThai: product.status || 'active',
     hinhAnh: product.image || '',
     danhSachAnh: product.images ? JSON.stringify(product.images) : undefined,

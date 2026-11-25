@@ -24,7 +24,7 @@ const STATUS_META: Record<
   pending: { label: 'Chờ xác nhận', icon: 'fa-clock', tone: 'pending' },
   confirmed: { label: 'Đã xác nhận', icon: 'fa-check-circle', tone: 'confirmed' },
   shipping: { label: 'Đang giao', icon: 'fa-truck', tone: 'shipping' },
-  completed: { label: 'Khách đã nhận', icon: 'fa-check-circle', tone: 'completed' },
+  completed: { label: 'Hoàn thành', icon: 'fa-check-circle', tone: 'completed' },
   cancelled: { label: 'Đã hủy', icon: 'fa-ban', tone: 'cancelled' },
   returned: { label: 'Đã trả hàng', icon: 'fa-rotate-left', tone: 'cancelled' },
 };
@@ -34,7 +34,7 @@ const FILTERS: Array<{ value: StatusFilter; label: string }> = [
   { value: 'pending', label: 'Chờ xác nhận' },
   { value: 'confirmed', label: 'Đã xác nhận' },
   { value: 'shipping', label: 'Đang giao' },
-  { value: 'completed', label: 'Khách đã nhận' },
+  { value: 'completed', label: 'Hoàn thành' },
   { value: 'returned', label: 'Đã trả hàng' },
   { value: 'cancelled', label: 'Đã hủy' },
 ];
@@ -146,14 +146,18 @@ export default function AdminOrders() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const statusFilter = getStatusFilter(searchParams.get('status'));
+  const channel = searchParams.get('channel') === 'all' ? 'all' : searchParams.get('channel') === 'online' ? 'online' : 'pos';
+  const [loadError,setLoadError]=useState('');
 
   const reload = async (keepSelectedId?: number) => {
     setLoading(true);
     try {
+      setLoadError('');
       const [response, cases] = await Promise.all([
-        orderApi.getOrders({ page: 1, pageSize: 200 }),
-        orderApi.getAfterSalesCases(),
+        orderApi.getOrders({ page: 1, pageSize: 200,channel }),
+        channel==='pos'?Promise.resolve([] as AdminAfterSalesCase[]):orderApi.getAfterSalesCases(),
       ]);
+      for(let p=2;p<=Math.ceil(response.total/response.pageSize);p++){const next=await orderApi.getOrders({page:p,pageSize:200,channel});response.items.push(...next.items);}
       const mapped = (response.items || [])
         .map((raw: any) => mapOrder(raw))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -164,7 +168,7 @@ export default function AdminOrders() {
       }
     } catch (error) {
       console.error(error);
-      toast.error('Không thể tải danh sách đơn hàng');
+      setOrders([]);setLoadError('Không thể tải danh sách đơn hàng.');toast.error('Không thể tải danh sách đơn hàng');
     } finally {
       setLoading(false);
     }
@@ -172,7 +176,7 @@ export default function AdminOrders() {
 
   useEffect(() => {
     void reload();
-  }, []);
+  }, [channel]);
 
   useEffect(() => {
     setSearch(searchParams.get('search') || '');
@@ -211,7 +215,7 @@ export default function AdminOrders() {
   }), [orders, afterSales]);
 
   const visibleRevenue = filteredOrders
-    .filter((order) => !['cancelled', 'returned'].includes(order.status))
+    .filter((order) => order.status==='completed')
     .reduce((sum, order) => sum + order.total, 0);
 
   const updateStatus = async (order: AdminOrder, nextStatus: AdminOrderStatus) => {
@@ -246,19 +250,20 @@ export default function AdminOrders() {
       <div className="page-header orders-page-header">
         <div className="orders-page-copy">
           
-          <h1>Quản lý đơn hàng & hậu mãi</h1>
-          <p>Theo dõi trạng thái đơn, giao hàng, trả hàng và hoàn tiền.</p>
+          <h1>Quản lý đơn bán</h1>
+          <p>Tra cứu hóa đơn bán tại quầy và đơn hàng cũ.</p>
         </div>
-        <div className="page-actions orders-page-actions">
+        <div className="page-actions orders-page-actions"><Link className="btn btn-primary" to="/admin/pos">+ Bán hàng tại quầy</Link>
           <button type="button" className="orders-header-button primary" onClick={() => void reload(selected?.numericId)}>
             <AdminIcon name="fa-rotate" /> <span>Làm mới</span>
           </button>
         </div>
       </div>
 
-      <div className="milkshop-ops-strip">
+      {loadError&&<p role="alert" className="ms-error">{loadError}</p>}
+      <div className="milkshop-ops-strip"><label>Kênh bán <select className="form-control" value={channel} onChange={e=>{setSelected(null);const q=new URLSearchParams(searchParams);q.set("channel",e.target.value);q.delete("status");setSearchParams(q);}}><option value="pos">Tại quầy</option><option value="online">Đơn trực tuyến cũ</option><option value="all">Tất cả</option></select></label>
         <span>Doanh thu theo bộ lọc: <strong>{formatCurrency(visibleRevenue)}</strong></span>
-        <span className={stats.attention > 0 ? 'milkshop-warning' : ''}>Hậu mãi cần xử lý: <strong>{stats.attention}</strong></span>
+        {channel!=='pos'&&<span className={stats.attention > 0 ? 'milkshop-warning' : ''}>Hậu mãi cần xử lý: <strong>{stats.attention}</strong></span>}
       </div>
 
       <div className="orders-overview-grid">
@@ -266,10 +271,10 @@ export default function AdminOrders() {
           ['all', 'Tất cả', stats.total, 'fa-shopping-bag', 'all'],
           ['pending', 'Chờ xác nhận', stats.pending, 'fa-clock', 'pending'],
           ['shipping', 'Đang xử lý/giao', stats.shipping, 'fa-truck', 'shipping'],
-          ['completed', 'Khách đã nhận', stats.completed, 'fa-check-circle', 'completed'],
+          ['completed', 'Hoàn thành', stats.completed, 'fa-check-circle', 'completed'],
           ['returned', 'Đã trả hàng', stats.returned, 'fa-rotate-left', 'cancelled'],
           ['cancelled', 'Đã hủy', stats.cancelled, 'fa-ban', 'cancelled'],
-        ].map(([key, label, value, icon, tone]) => (
+        ].filter(([key])=>channel!=='pos'||key==='all'||key==='completed').map(([key, label, value, icon, tone]) => (
           <button
             key={String(key)}
             type="button"
@@ -307,7 +312,7 @@ export default function AdminOrders() {
         </div>
         <div className="orders-filter-footer">
           <div className="orders-preset-group">
-            {FILTERS.map((filter) => (
+            {FILTERS.filter(f=>channel!=='pos'||f.value==='all'||f.value==='completed').map((filter) => (
               <button
                 key={filter.value}
                 type="button"
@@ -343,7 +348,7 @@ export default function AdminOrders() {
                 const paymentMeta = getPaymentMeta(order.paymentMethod);
                 const caseItem = afterSales.get(order.numericId);
                 const afterSalesMeta = afterSalesLabel(caseItem);
-                const transitions = writableTransitions(order.status);
+                const transitions = order.kenhBan==='pos'?[]:writableTransitions(order.status);
                 return (
                   <tr key={order.numericId}>
                     <td>

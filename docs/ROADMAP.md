@@ -6,3 +6,5 @@
 4. Lập Test Design và Test Case; thực thi Katalon Studio, JMeter, AI hỗ trợ kiểm thử; ghi nhận lỗi và PASS/FAIL.
 
 Bước 1 hoàn thành; bước 2 đã có CI MariaDB thật và người dùng chạy Admin local. Bước 3 đã chuyển nhận diện và đồng bộ style toàn Admin; đã triển khai POS cơ bản, phiếu nhập theo lô, FEFO, cảnh báo/hủy hàng hết hạn và hóa đơn; cần xác minh runtime và UI, hoàn thiện form sản phẩm, báo cáo giá vốn, hàng hủy, barcode và trả hàng POS. Lịch sử roadmap dự án nguồn lưu tại `docs/history/inherited-mobile-roadmap.md`.
+
+Đã chuyển form sản phẩm, thuộc tính, kho, cảnh báo, đơn bán, báo cáo, dashboard và cài đặt sang nghiệp vụ sữa. Cần xác minh CI/runtime/trình duyệt và chuẩn hóa dữ liệu tồn cũ; tiếp theo test design và Katalon/JMeter.

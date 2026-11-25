@@ -50,7 +50,7 @@ export class AdminLotsController {
    if(l.TrangThai!=="active"||quantity<=0||String(l.Hsd)>vietnamDate())throw new BadRequestException("Chỉ hủy lô hết hạn và còn tồn.");
    if(after<Number(p.SoLuongDaGiu??0))throw new ConflictException("Tồn kho không khớp. Kiểm tra trước khi hủy.");
    const now=new Date();
-   await tx.$executeRawUnsafe("UPDATE LoHang SET SoLuongCon=0,TrangThai='discarded',LyDoHuy=?,NguoiHuy=?,NgayHuy=? WHERE Id=?",reason,user.name,now,id);
+   await tx.$executeRawUnsafe("UPDATE LoHang SET SoLuongHuy=SoLuongCon,SoLuongCon=0,TrangThai='discarded',LyDoHuy=?,NguoiHuy=?,NgayHuy=? WHERE Id=?",reason,user.name,now,id);
    await tx.$executeRawUnsafe("UPDATE SanPham SET TonKho=?,TrangThai=CASE WHEN ?=0 AND TrangThai<>'draft' THEN 'out-of-stock' ELSE TrangThai END,NgayCapNhat=? WHERE Id=?",after,after,now,productId);
    await insertRow(tx,"TonKho_LichSu",{SanPhamId:productId,TenSanPham:String(p.TenSanPham),LoaiThayDoi:"export",SoLuong:quantity,TonKhoTruoc:before,TonKhoSau:after,GhiChu:("Hủy lô "+String(l.MaLo)+": "+reason).slice(0,300),NguoiThucHien:user.name,NgayTao:now});
    return {id,quantity,remaining:after};
@@ -71,8 +71,8 @@ export class AdminPosController {
  async products(@CurrentUser() user:AuthenticatedUser,@Query("search") search?:string,@Query("page") rawPage?:string) {
   assertStaffPermission(user,"orders.update_status");
   const {page,pageSize,offset}=pageValues(rawPage,"30"),q="%"+(search??"").trim()+"%",today=vietnamDate();
-  const rows=await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT p.Id,p.TenSanPham,p.MaSanPham,p.Gia,p.DonViTinh,p.HinhAnh,CASE WHEN p.TrangThai='active' THEN GREATEST(0,LEAST(p.TonKho-p.SoLuongDaGiu,COALESCE((SELECT SUM(l.SoLuongCon) FROM LoHang l WHERE l.SanPhamId=p.Id AND l.TrangThai='active' AND l.HanSuDung>?),0))) ELSE 0 END AS CoTheBan FROM SanPham p WHERE p.TrangThai IN ('active','out-of-stock') AND (p.TenSanPham LIKE ? OR p.MaSanPham LIKE ?) ORDER BY p.TenSanPham,p.Id LIMIT ? OFFSET ?",today,q,q,pageSize,offset);
-  const count=await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT COUNT(*) AS total FROM SanPham WHERE TrangThai IN ('active','out-of-stock') AND (TenSanPham LIKE ? OR MaSanPham LIKE ?)",q,q);
+  const rows=await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT p.Id,p.TenSanPham,p.MaSanPham,p.MaVach,p.Gia,p.DonViTinh,p.HinhAnh,CASE WHEN p.TrangThai='active' THEN GREATEST(0,LEAST(p.TonKho-p.SoLuongDaGiu,COALESCE((SELECT SUM(l.SoLuongCon) FROM LoHang l WHERE l.SanPhamId=p.Id AND l.TrangThai='active' AND l.HanSuDung>?),0))) ELSE 0 END AS CoTheBan FROM SanPham p WHERE p.TrangThai IN ('active','out-of-stock') AND (p.TenSanPham LIKE ? OR p.MaSanPham LIKE ? OR p.MaVach LIKE ?) ORDER BY p.TenSanPham,p.Id LIMIT ? OFFSET ?",today,q,q,q,pageSize,offset);
+  const count=await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT COUNT(*) AS total FROM SanPham WHERE TrangThai IN ('active','out-of-stock') AND (TenSanPham LIKE ? OR MaSanPham LIKE ? OR MaVach LIKE ? )",q,q,q);
   return {items:jsonRows(rows),total:Number(count[0]?.total??0),page,pageSize};
  }
  @Get("sales/:id")

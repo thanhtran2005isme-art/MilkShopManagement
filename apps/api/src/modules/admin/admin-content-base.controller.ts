@@ -49,15 +49,24 @@ function permission(user: AuthenticatedUser, name: string): void {
 export class AdminAttributesController {
   constructor(private readonly prisma: PrismaService) {}
 
+  private milkValues(body:JsonRecord){
+    const group=text(body,"NhomThuocTinh").trim(),value=text(body,"GiaTri").trim();
+    const names:Record<string,string>={brand:"Thương hiệu",volume:"Dung tích (ml)",weight:"Khối lượng (g)",flavor:"Hương vị",unit:"Đơn vị tính"};
+    const lengths:Record<string,number>={brand:150,volume:7,weight:7,flavor:100,unit:30};
+    if(!Object.prototype.hasOwnProperty.call(names,group)||!value||value.length>lengths[group])throw new BadRequestException("Nhóm hoặc giá trị thuộc tính không hợp lệ.");
+    if(["volume","weight"].includes(group)&&(!/^[1-9][0-9]*$/.test(value)||Number(value)>1000000))throw new BadRequestException("Giá trị phải là số nguyên dương.");
+    return {TenThuocTinh:names[group],GiaTri:value,NhomThuocTinh:group,ThuTu:num(body,"ThuTu")};
+  }
   @Get()
   async all(@CurrentUser() user: AuthenticatedUser, @Query("group") group?: string) {
     permission(user, "attributes.manage");
+    if(group&&!["brand","volume","weight","flavor","unit"].includes(group))return [];
     const rows = group?.trim()
       ? await this.prisma.$queryRawUnsafe<JsonRecord[]>(
           "SELECT * FROM ThuocTinhSanPham WHERE NhomThuocTinh=? ORDER BY ThuTu",
           group.trim(),
         )
-      : await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM ThuocTinhSanPham ORDER BY ThuTu");
+      : await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT * FROM ThuocTinhSanPham WHERE NhomThuocTinh IN ('brand','volume','weight','flavor','unit') ORDER BY ThuTu");
     return jsonRows(rows);
   }
 
@@ -66,10 +75,7 @@ export class AdminAttributesController {
     permission(user, "attributes.manage");
     return this.prisma.$transaction(async (tx) => {
       const id = await insertRow(tx, "ThuocTinhSanPham", {
-        TenThuocTinh: text(body, "TenThuocTinh"),
-        GiaTri: text(body, "GiaTri"),
-        NhomThuocTinh: nullableText(body, "NhomThuocTinh"),
-        ThuTu: num(body, "ThuTu"),
+        ...this.milkValues(body),
         NgayTao: date(body, "NgayTao", new Date()),
       });
       return selectById(tx, "ThuocTinhSanPham", id);
@@ -80,10 +86,7 @@ export class AdminAttributesController {
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string, @Body() body: JsonRecord) {
     permission(user, "attributes.manage");
     return updateRow(this.prisma, "ThuocTinhSanPham", intPath(rawId), {
-      TenThuocTinh: text(body, "TenThuocTinh"),
-      GiaTri: text(body, "GiaTri"),
-      NhomThuocTinh: nullableText(body, "NhomThuocTinh"),
-      ThuTu: num(body, "ThuTu"),
+      ...this.milkValues(body),
     });
   }
 

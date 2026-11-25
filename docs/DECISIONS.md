@@ -306,3 +306,6 @@ Schema chuẩn duy nhất là `database/MilkShop_MariaDB.sql` (55 bảng tương
 
 ## D031 — POS và quản lý hạn sử dụng
 Mỗi dòng nhập mới tạo một LoHang; cùng mã lô có thể xuất hiện ở nhiều phiếu, nhận diện bởi Id và chi tiết phiếu. HSD <= ngày Việt Nam hiện tại coi là hết hạn. FEFO ưu tiên HSD rồi Id; trừ tồn trong transaction với khóa SanPham trước LoHang. POS dùng DonHang hoàn thành và phân bổ lô, chỉ thanh toán tiền mặt/chuyển khoản xác nhận thủ công; giảm giá số tiền nhập tay. Không gọi dịch vụ thanh toán. Không tự gán hạn cho tồn cũ; chặn sửa trực tiếp tồn theo lô và hủy phiếu đã sử dụng. Không dùng luồng hậu mãi trực tuyến cho đơn POS.
+
+## D032 — Catalog và báo cáo theo lô
+Giữ cột legacy vì tương thích, không DROP dữ liệu. Mã vạch nullable unique và SKU unique; tồn mới bằng 0, nhập qua phiếu. Báo cáo lợi nhuận gộp POS = doanh thu sau giảm giá - tổng giá vốn theo phân bổ lô; không coi là lợi nhuận ròng. Hàng hết hạn còn tồn định giá theo giá nhập. SoLuongHuy được ghi khi hủy, bản ghi cũ NULL được thống kê riêng. Cảnh báo tồn dựa trên tồn có thể bán. Ngưỡng tồn kho vẫn lưu theo trình duyệt như trước; hạn dùng 30 ngày. Giữ đơn online cũ ở bộ lọc riêng, không xóa lịch sử.

@@ -20,6 +20,12 @@ export interface ProductVariantInventory {
 
 export interface Product {
   id: number;
+  brand?: string;
+  volumeMl?: number | null;
+  weightG?: number | null;
+  flavor?: string;
+  barcode?: string;
+  unit?: string;
   name: string;
   category: string;
   subcategory?: string;

@@ -51,13 +51,13 @@ const menuItems: MenuItem[] = [
   { path: '/admin/dashboard', icon: 'fa-chart-line', label: 'Tổng quan' },
   {
     icon: 'fa-shopping-cart',
-    label: 'Đơn hàng',
+    label: 'Đơn bán',
     submenu: [
       { path: '/admin/orders', label: 'Tất cả đơn hàng' },
-      { path: '/admin/orders?status=pending', label: 'Chờ xác nhận' },
-      { path: '/admin/orders?status=shipping', label: 'Đang giao' },
+      { path: '/admin/orders?channel=online&status=pending', label: 'Đơn online chờ xác nhận' },
+      { path: '/admin/orders?channel=online&status=shipping', label: 'Đơn online đang giao' },
       { path: '/admin/orders?status=completed', label: 'Hoàn thành' },
-      { path: '/admin/orders?status=cancelled', label: 'Đã huỷ' },
+      { path: '/admin/orders?channel=online&status=cancelled', label: 'Đơn online đã hủy' },
     ],
   },
   {
@@ -76,7 +76,7 @@ const menuItems: MenuItem[] = [
     submenu: [
       { path: '/admin/inventory', label: 'Tồn kho' },
       { path: '/admin/inventory/history', label: 'Lịch sử nhập/xuất' },
-      { path: '/admin/inventory/alerts', label: 'Cảnh báo hết hàng' },
+      { path: '/admin/inventory/alerts', label: 'Cảnh báo kho & hạn dùng' },
       { path: '/admin/stock-receipts', label: 'Phiếu nhập kho' },
       { path: '/admin/suppliers', label: 'Nhà cung cấp' },
     ],
@@ -122,7 +122,7 @@ export default function AdminLayout() {
 
   // Menu tài chính/nhân sự chỉ xuất hiện khi staff có đúng permission tương ứng.
   const visibleMenu = useMemo<MenuItem[]>(() => {
-    const items = menuItems.map(item => ({ ...item, submenu: item.submenu ? [...item.submenu] : undefined }));
+    const items: MenuItem[] = menuItems.map(item => ({ ...item, submenu: item.submenu ? [...item.submenu] : undefined }));
     if (hasPermission('orders.update_status')) items.splice(1,0,{path:'/admin/pos',icon:'fa-shopping-cart',label:'Bán hàng tại quầy'});
     if (hasPermission('inventory.view')) items.find(item=>item.label==='Kho hàng')?.submenu?.splice(1,0,{path:'/admin/inventory/lots',label:'Lô hàng & hạn sử dụng'});
     const settingsIdx = items.findIndex((i) => i.path === '/admin/settings');

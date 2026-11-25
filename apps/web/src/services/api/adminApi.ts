@@ -15,6 +15,8 @@ export interface DashboardStatsDTO {
   pendingOrders: number;
   lowStockProducts: number;
   pendingReviews: number;
+  expiringLots?: number;
+  expiredLots?: number;
 }
 
 export interface OrderStatsDTO {
@@ -52,6 +54,8 @@ export interface DashboardStats {
   pendingOrders: number;
   lowStockProducts: number;
   pendingReviews: number;
+  expiringLots?: number;
+  expiredLots?: number;
 }
 
 export interface OrderStats {

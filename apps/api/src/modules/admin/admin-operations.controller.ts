@@ -90,9 +90,12 @@ export class AdminInventoryController {
     const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
     return jsonRows(await this.prisma.$queryRawUnsafe<JsonRecord[]>(
       `SELECT Id, TenSanPham, MaSanPham, HinhAnh, TonKho, SoLuongDaBan, TrangThai,
-              DanhMuc, DanhMucPhu, GioiTinh, NgayTao, NgayCapNhat
+              DanhMuc, DanhMucPhu, GioiTinh, NgayTao, NgayCapNhat, DonViTinh, MaVach, ThuongHieu,
+              COALESCE((SELECT SUM(l.SoLuongCon) FROM LoHang l WHERE l.SanPhamId=SanPham.Id AND l.TrangThai='active'),0) AS TonTheoLo,
+              COALESCE((SELECT SUM(l.SoLuongCon) FROM LoHang l WHERE l.SanPhamId=SanPham.Id AND l.TrangThai='active' AND l.HanSuDung<=?),0) AS TonHetHan,
+              CASE WHEN TrangThai='active' THEN GREATEST(0,LEAST(TonKho-SoLuongDaGiu,COALESCE((SELECT SUM(l.SoLuongCon) FROM LoHang l WHERE l.SanPhamId=SanPham.Id AND l.TrangThai='active' AND l.HanSuDung>?),0))) ELSE 0 END AS CoTheBan
        FROM SanPham ${where} ORDER BY TonKho`,
-      ...params,
+      vietnamDate(), vietnamDate(), ...params,
     ));
   }
 
@@ -176,6 +179,7 @@ export class AdminOrdersController {
   async all(
     @CurrentUser() user: AuthenticatedUser,
     @Query("status") status?: string,
+    @Query("channel") channel?: string,
     @Query("search") search?: string,
     @Query("page") rawPage?: string,
     @Query("pageSize") rawPageSize?: string,
@@ -184,6 +188,7 @@ export class AdminOrdersController {
     const { page, pageSize, offset } = pageValues(rawPage, rawPageSize);
     const clauses: string[] = [];
     const params: unknown[] = [];
+    if (channel && channel!=="all") { if (!["pos","online"].includes(channel)) throw new BadRequestException("Kênh bán không hợp lệ."); clauses.push("KenhBan=?"); params.push(channel); }
     if (status?.trim()) { clauses.push("TrangThai=?"); params.push(status.trim()); }
     if (search?.trim()) {
       clauses.push("(MaDonHang LIKE ? OR TenNguoiNhan LIKE ? OR SoDienThoai LIKE ?)");

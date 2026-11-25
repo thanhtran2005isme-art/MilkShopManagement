@@ -40,7 +40,7 @@ export const RBAC_PERMISSIONS: readonly RbacPermissionDefinition[] = [
   { code: "menus.manage", name: "Quản lý menu", group: "marketing", description: "Quản lý menu điều hướng" },
   { code: "reviews.view", name: "Xem đánh giá", group: "reviews", description: "Xem đánh giá sản phẩm" },
   { code: "reviews.moderate", name: "Duyệt đánh giá", group: "reviews", description: "Duyệt hoặc từ chối đánh giá" },
-  { code: "attributes.manage", name: "Quản lý thuộc tính", group: "attributes", description: "Quản lý size, màu và chất liệu" },
+  { code: "attributes.manage", name: "Quản lý thuộc tính", group: "attributes", description: "Quản lý thương hiệu, dung tích, khối lượng, hương vị và đơn vị" },
   { code: "settings.view", name: "Xem cài đặt", group: "settings", description: "Xem cài đặt cửa hàng" },
   { code: "settings.manage", name: "Quản lý cài đặt", group: "settings", description: "Thay đổi cài đặt cửa hàng" },
   { code: "staff.view", name: "Xem nhân viên", group: "staff", description: "Xem danh sách nhân viên" },

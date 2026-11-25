@@ -186,7 +186,7 @@ export default function AdminStockReceiptNew() {
       return;
     }
     for (const line of lines) {
-      if (!line.maLo.trim() || !line.ngaySanXuat || !line.hanSuDung || line.ngaySanXuat >= line.hanSuDung) {
+      if (!line.maLo.trim() || !line.ngaySanXuat || !line.hanSuDung || line.ngaySanXuat >= line.hanSuDung || line.hanSuDung <= new Date(Date.now()+7*3600000).toISOString().slice(0,10)) {
         notify({ tone: 'error', message: `Nhập mã lô, NSX và HSD hợp lệ cho ${line.tenSanPham}.` }); return;
       }
       if (line.soLuong <= 0) {

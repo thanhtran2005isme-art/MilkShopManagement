@@ -267,6 +267,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <div className="ms-kpis"><Link className="ms-kpi" to="/admin/inventory/lots?status=expiring"><span>Lô sắp hết hạn (30 ngày)</span><strong>{dashboardStats?.expiringLots??"—"}</strong></Link><Link className="ms-kpi" to="/admin/inventory/lots?status=expired"><span>Lô hết hạn cần xử lý</span><strong>{dashboardStats?.expiredLots??"—"}</strong></Link><Link className="ms-kpi" to="/admin/pos"><span>Thao tác nhanh</span><strong>Bán tại quầy</strong></Link></div>
       <div className="dashboard-section-heading">
         <div>
           <span>KPI chính</span>

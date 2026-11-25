@@ -33,10 +33,10 @@ test("wallet schema có balance, immutable ledger và withdrawal hold", () => {
   assert.match(wallet, /SoDuTamGiu/);
 });
 
-test("contract database được nâng từ 52 lên đúng 55 bảng", () => {
+test("contract database được nâng từ 52 lên đúng 57 bảng", () => {
   assert.match(tables, /"ViDienTu", "GiaoDichVi", "YeuCauRutTien"/);
   const quotedTables = tables.match(/"[A-Za-z_]+"/g) ?? [];
-  assert.equal(quotedTables.length, 55);
+  assert.equal(quotedTables.length, 57);
 });
 
 test("migration ví đồng bộ nội dung chính sách hoàn hàng 15 ngày", () => {

@@ -2,6 +2,7 @@ import { adminApiClient } from '../apiClient';
 import type { OrderDTO, UpdateOrderStatusDTO } from '../../types/api';
 
 export interface OrderListParams {
+  channel?: 'pos'|'online'|'all';
   status?: string;
   search?: string;
   page?: number;

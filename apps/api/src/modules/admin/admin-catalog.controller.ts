@@ -18,7 +18,7 @@ import type { AuthenticatedUser } from "../../auth/authenticated-user.js";
 import { JwtAuthGuard } from "../../auth/jwt-auth.guard.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import { assertStaffPermission } from "../identity/staff-permissions.js";
-import { assertUntrackedInventory } from "./milkshop-lot-utils.js";
+import { assertUntrackedInventory, vietnamDate, addDays } from "./milkshop-lot-utils.js";
 import { AdminStaffGuard } from "./admin-staff.guard.js";
 import {
   bool,
@@ -218,16 +218,21 @@ export class AdminProductsController {
       throw new BadRequestException("Tên, mã sản phẩm, giá và tồn kho không hợp lệ.");
     }
     const milkFields: Record<string, unknown> = {};
+    if(name.length>200||sku.length>50||!Number.isSafeInteger(Number(price))||Number(price)>1000000000) throw new BadRequestException("Tên, mã hoặc giá bán vượt giới hạn.");
+    if(bodyValue(body,"MaVach")!==undefined){const barcode=nullableText(body,"MaVach")?.trim()||null;if(barcode&&!/^[0-9]{8,14}$/.test(barcode)) throw new BadRequestException("Mã vạch phải gồm 8–14 chữ số.");milkFields.MaVach=barcode;}
+    const weight=bodyValue(body,"KhoiLuongG");if(weight!==undefined){if(weight!==null&&(!Number.isSafeInteger(Number(weight))||Number(weight)<=0||Number(weight)>1000000))throw new BadRequestException("Khối lượng phải là số nguyên dương.");milkFields.KhoiLuongG=weight===null?null:Number(weight);}
+    if(creating&&Number(stock??0)!==0)throw new BadRequestException("Sản phẩm mới phải có tồn 0; nhập qua phiếu nhập.");
     for (const key of ["ThuongHieu", "HuongVi", "DonViTinh"]) {
       if (bodyValue(body, key) !== undefined) {
         const value = nullableText(body, key)?.trim() || null;
+        if (value && value.length>(key==="DonViTinh"?30:key==="HuongVi"?100:150)) throw new BadRequestException("Thông tin sản phẩm quá dài.");
         if (key === "DonViTinh" && !value) throw new BadRequestException("Đơn vị tính không được bỏ trống.");
         milkFields[key] = value;
       }
     }
     const volume = bodyValue(body, "DungTichMl");
     if (volume !== undefined) {
-      if (volume !== null && (!Number.isSafeInteger(Number(volume)) || Number(volume) <= 0)) throw new BadRequestException("Dung tích phải là số nguyên dương.");
+      if (volume !== null && (!Number.isSafeInteger(Number(volume)) || Number(volume) <= 0 || Number(volume)>1000000)) throw new BadRequestException("Dung tích phải là số nguyên dương.");
       milkFields.DungTichMl = volume === null ? null : Number(volume);
     }
     return {
@@ -278,13 +283,19 @@ export class AdminProductsController {
     const { page, pageSize, offset } = pageValues(rawPage, rawPageSize);
     const clauses: string[] = [];
     const params: unknown[] = [];
-    if (search?.trim()) { clauses.push("(TenSanPham LIKE ? OR MaSanPham LIKE ?)"); params.push(`%${search.trim()}%`, `%${search.trim()}%`); }
+    if (search?.trim()) { clauses.push("(TenSanPham LIKE ? OR MaSanPham LIKE ? OR MaVach LIKE ? OR ThuongHieu LIKE ?)"); params.push(...Array(4).fill(`%${search.trim()}%`)); }
     if (category?.trim()) { clauses.push("DanhMuc=?"); params.push(category.trim()); }
     if (status?.trim()) { clauses.push("TrangThai=?"); params.push(status.trim()); }
     const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
     const totals = await this.prisma.$queryRawUnsafe<Array<{ total: unknown }>>(`SELECT COUNT(*) AS total FROM SanPham ${where}`, ...params);
     const rows = await this.prisma.$queryRawUnsafe<JsonRecord[]>(`SELECT * FROM SanPham ${where} ORDER BY NgayTao DESC LIMIT ? OFFSET ?`, ...params, pageSize, offset);
     return { items: jsonRows(rows), total: Number(totals[0]?.total ?? 0), page, pageSize };
+  }
+
+  @Get("attribute-options")
+  async attributeOptions(@CurrentUser() user: AuthenticatedUser) {
+    assertStaffPermission(user,"products.view");
+    return jsonRows(await this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT Id,TenThuocTinh,GiaTri,NhomThuocTinh,ThuTu,NgayTao FROM ThuocTinhSanPham WHERE NhomThuocTinh IN ('brand','volume','weight','flavor','unit') ORDER BY ThuTu,Id"));
   }
 
   @Get(":id")
@@ -294,7 +305,9 @@ export class AdminProductsController {
   async create(@CurrentUser() user: AuthenticatedUser, @Body() body: JsonRecord) {
     assertStaffPermission(user, "products.create");
     return this.prisma.$transaction(async (tx) => {
-      const id = await insertRow(tx, "SanPham", this.values(body, true));
+      const values=this.values(body,true);
+      await this.checkUnique(tx,values);
+      const id = await insertRow(tx, "SanPham", values);
       return selectById(tx, "SanPham", id);
     });
   }
@@ -309,13 +322,19 @@ export class AdminProductsController {
       const values=this.values(body);
       if(bodyValue(body,"TonKho")===undefined) delete values.TonKho;
       else if(Number(values.TonKho)!==Number(row.TonKho)) await assertUntrackedInventory(tx,id);
+      await this.checkUnique(tx,values,id);
       return updateRow(tx,"SanPham",id,values);
     });
   }
 
+  private async checkUnique(tx: import("../../common/sql-client.js").SqlClient,values:Record<string,unknown>,id=0){
+    const rows=await tx.$queryRawUnsafe<JsonRecord[]>("SELECT Id FROM SanPham WHERE Id<>? AND (MaSanPham=? OR (MaVach IS NOT NULL AND MaVach=?)) LIMIT 1",id,values.MaSanPham,values.MaVach??null);
+    if(rows.length)throw new BadRequestException("Mã sản phẩm hoặc mã vạch đã tồn tại.");
+  }
+
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string) { assertStaffPermission(user, "products.delete"); await deleteRow(this.prisma, "SanPham", intPath(rawId)); }
+  async remove(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string) { assertStaffPermission(user, "products.delete"); await this.prisma.$transaction(async tx=>{const id=intPath(rawId);await tx.$queryRawUnsafe("SELECT Id FROM SanPham WHERE Id=? FOR UPDATE",id);await assertUntrackedInventory(tx,id);await deleteRow(tx,"SanPham",id);}); }
 }
 
 @Controller("api/admin/reports")
@@ -326,6 +345,7 @@ export class AdminReportsController {
   @Get("dashboard")
   async dashboard(@CurrentUser() user: AuthenticatedUser) {
     assertStaffPermission(user, "dashboard.view");
+    const today=vietnamDate(), soon=addDays(today,30);
     const rows = await this.prisma.$queryRawUnsafe<JsonRecord[]>(
       `SELECT
         (SELECT COUNT(*) FROM SanPham) AS totalProducts,
@@ -334,9 +354,27 @@ export class AdminReportsController {
         COALESCE((SELECT SUM(TongTien) FROM DonHang WHERE TrangThai='completed'),0) AS totalRevenue,
         (SELECT COUNT(*) FROM DonHang WHERE TrangThai='pending') AS pendingOrders,
         (SELECT COUNT(*) FROM SanPham WHERE TonKho<=5 AND TrangThai='active') AS lowStockProducts,
-        (SELECT COUNT(*) FROM DanhGia WHERE TrangThai='pending') AS pendingReviews`,
+        0 AS pendingReviews,
+        (SELECT COUNT(*) FROM LoHang WHERE TrangThai='active' AND SoLuongCon>0 AND HanSuDung<=?) AS expiredLots,
+        (SELECT COUNT(*) FROM LoHang WHERE TrangThai='active' AND SoLuongCon>0 AND HanSuDung>? AND HanSuDung<=?) AS expiringLots`,today,today,soon,
     );
     return jsonValue(rows[0] ?? {});
+  }
+
+  @Get("milkshop-finance")
+  async finance(@CurrentUser() user:AuthenticatedUser,@Query("days") rawDays="30"){
+    assertStaffPermission(user,"reports.view");
+    const days=Math.max(1,Math.min(3650,Math.floor(Number(rawDays)||30)));
+    const today=vietnamDate(),from=new Date(Date.parse(addDays(today,1-days)+"T00:00:00+07:00")),until=new Date(Date.parse(addDays(today,1)+"T00:00:00+07:00"));
+    const [sales,cost,expired,discarded,top]=await Promise.all([
+      this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT COALESCE(SUM(TongTien),0) AS revenue,COUNT(*) AS orders FROM DonHang WHERE KenhBan='pos' AND TrangThai='completed' AND NgayTao>=? AND NgayTao<?",from,until),
+      this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT COALESCE(SUM(b.SoLuong*b.GiaNhap),0) AS cost FROM PhanBoLoBan b JOIN ChiTietDonHang c ON c.Id=b.ChiTietDonHangId JOIN DonHang d ON d.Id=c.DonHangId WHERE d.KenhBan='pos' AND d.TrangThai='completed' AND d.NgayTao>=? AND d.NgayTao<?",from,until),
+      this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT COALESCE(SUM(SoLuongCon*GiaNhap),0) AS value,COALESCE(SUM(SoLuongCon),0) AS quantity,COUNT(*) AS lots FROM LoHang WHERE TrangThai='active' AND SoLuongCon>0 AND HanSuDung<=?",today),
+      this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT COALESCE(SUM(SoLuongHuy*GiaNhap),0) AS value,COALESCE(SUM(SoLuongHuy IS NULL),0) AS unknownLots FROM LoHang WHERE TrangThai='discarded' AND NgayHuy>=? AND NgayHuy<?",from,until),
+      this.prisma.$queryRawUnsafe<JsonRecord[]>("SELECT c.SanPhamId,MAX(c.TenSanPham) AS TenSanPham,SUM(c.SoLuong) AS quantity,SUM(c.SoLuong*c.DonGia) AS revenue FROM ChiTietDonHang c JOIN DonHang d ON d.Id=c.DonHangId WHERE d.KenhBan='pos' AND d.TrangThai='completed' AND d.NgayTao>=? AND d.NgayTao<? GROUP BY c.SanPhamId ORDER BY revenue DESC LIMIT 10",from,until)
+    ]);
+    const revenue=Number(sales[0]?.revenue??0),costOfGoods=Number(cost[0]?.cost??0);
+    return {revenue,costOfGoods,grossProfit:revenue-costOfGoods,orders:Number(sales[0]?.orders??0),expiredValue:Number(expired[0]?.value??0),expiredQuantity:Number(expired[0]?.quantity??0),expiredLots:Number(expired[0]?.lots??0),discardedValue:Number(discarded[0]?.value??0),unknownDiscardedLots:Number(discarded[0]?.unknownLots??0),topProducts:jsonRows(top),days,today};
   }
 
   @Get("revenue")
@@ -359,7 +397,7 @@ export class AdminReportsController {
     const fromDate = new Date(Date.now() - days * 24 * 60 * 60_000);
     return jsonRows(await this.prisma.$queryRawUnsafe<JsonRecord[]>(
       `SELECT p.Id, p.TenSanPham, p.MaSanPham, p.HinhAnh, p.Gia,
-              SUM(ct.SoLuong) AS SoLuongDaBan, p.TonKho
+              SUM(ct.SoLuong) AS SoLuongDaBan, SUM(ct.SoLuong*ct.DonGia) AS Revenue, p.TonKho
        FROM ChiTietDonHang ct
        JOIN DonHang d ON d.Id=ct.DonHangId
        LEFT JOIN SanPham p ON p.Id=ct.SanPhamId

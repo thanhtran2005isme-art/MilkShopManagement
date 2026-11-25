@@ -10,3 +10,5 @@
 - Chỉ thấy BE chạy: cập nhật run.bat và scripts/run-all.bat từ main. Launcher mở hai cửa sổ độc lập trước khi kiểm tra health. FE dùng port 5173 cố định và mở /admin/login. Nếu BE degraded, xem missingTables/missingPermissions trong thông báo; nếu FE lỗi, xem cửa sổ Web Admin.
 
 - Health thiếu LoHang/PhanBoLoBan: sao lưu DB milkshop, import migration 20261125_milkshop_lots_pos.sql rồi khởi động lại. Nếu POS không bán được, kiểm tra lô còn hạn và tồn khả dụng, không chỉnh trực tiếp tồn sản phẩm theo lô.
+
+- Nếu báo lỗi Unknown column MaVach/KhoiLuongG/SoLuongHuy: sao lưu DB và import migration 20261125_milkshop_catalog_reports.sql sau migration lots_pos. Không DROP database.

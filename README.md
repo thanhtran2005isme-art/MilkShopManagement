@@ -34,3 +34,6 @@ Dừng BE/FE, sao lưu database milkshop rồi import duy nhất `database/migra
 "C:\xampp\mysql\bin\mysql.exe" -u root < database\migrations\20261125_milkshop_lots_pos.sql
 ```
 Nếu MySQL có mật khẩu thêm -p. Fresh install dùng schema chính đã tích hợp migration. Chạy lại run.bat. Không cần tạo lại admin. Tồn kho cũ chưa có lô không thể bán tại POS; không tự gán ngày giả. Nhập phiếu có mã lô, NSX, HSD để bán.
+
+### Nâng cấp catalog và báo cáo sữa
+Sau migration lots_pos, import `database/migrations/20261125_milkshop_catalog_reports.sql` trong phpMyAdmin (hoặc mysql CLI). Schema chính đã chứa cả hai migration dành cho cài mới. Số bảng vẫn 57. Không sửa .env.

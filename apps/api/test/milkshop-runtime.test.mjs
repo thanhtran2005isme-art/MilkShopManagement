@@ -84,3 +84,22 @@ test("MariaDB: nhập hai lô, POS FEFO, lỗi vượt tồn, chống trùng, kh
  assert.equal((await request("/api/admin/orders/"+sale.json.id+"/status","PUT",{trangThai:"cancelled"},token)).status,400);
  // CI dùng DB dùng một lần; giữ hóa đơn và truy vết kho thay vì xóa dữ liệu đã bán.
 });
+
+test("MariaDB: thông tin sữa, mã vạch, thuộc tính và báo cáo giá vốn", async () => {
+ const login=await request("/api/auth/staff/login","POST",{email,password});
+ assert.equal(login.status,200);const token=login.json.accessToken,stamp=Date.now();
+ const barcode=String(stamp).slice(-13);
+ const body={tenSanPham:"Sữa bột kiểm thử",maSanPham:"QA-MILK-"+stamp,danhMuc:"Sữa bột",gia:100000,tonKho:0,thuongHieu:"QA",khoiLuongG:400,huongVi:"Vani",donViTinh:"Lon",maVach:barcode};
+ assert.equal((await request("/api/admin/products","POST",{...body,khoiLuongG:-1},token)).status,400);
+ assert.equal((await request("/api/admin/products","POST",{...body,maVach:"abc"},token)).status,400);
+ const created=await request("/api/admin/products","POST",body,token);assert.equal(created.status,201,JSON.stringify(created.json));
+ assert.equal(created.json.khoiLuongG,400);assert.equal(created.json.maVach,barcode);
+ assert.equal((await request("/api/admin/products","POST",{...body,maSanPham:body.maSanPham+"-2"},token)).status,400);
+ const found=await request("/api/admin/products?search="+barcode,"GET",undefined,token);assert.equal(found.status,200);assert.ok(found.json.items.some(p=>p.id===created.json.id));
+ assert.equal((await request("/api/admin/attributes","POST",{tenThuocTinh:"Size",giaTri:"XL",nhomThuocTinh:"size"},token)).status,400);
+ const finance=await request("/api/admin/reports/milkshop-finance?days=30","GET",undefined,token);assert.equal(finance.status,200,JSON.stringify(finance.json));
+ assert.equal(finance.json.grossProfit,finance.json.revenue-finance.json.costOfGoods);
+ const inv=await request("/api/admin/inventory?search="+body.maSanPham,"GET",undefined,token);assert.equal(inv.status,200);assert.equal(inv.json[0].coTheBan,0);
+ assert.equal((await request("/api/admin/orders?channel=invalid","GET",undefined,token)).status,400);
+ await request("/api/admin/products/"+created.json.id,"DELETE",undefined,token);
+});

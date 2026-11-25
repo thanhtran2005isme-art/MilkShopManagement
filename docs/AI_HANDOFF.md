@@ -40,3 +40,6 @@ Tất cả route Admin dùng hệ màu MilkShop và quy tắc chung cho header, 
 
 ## Lô hàng và POS
 Hai route mới `/admin/inventory/lots` và `/admin/pos`. Phiếu nhập mới bắt buộc mã lô, NSX và HSD, tự sinh LoHang. POS ghi DonHang/ChiTietDonHang/LichSuThanhToan, PhanBoLoBan và TonKho_LichSu trong một transaction, FEFO, khóa tồn và requestId chống trùng. Cảnh báo 30 ngày; ngày HSD không còn được bán theo múi giờ Việt Nam. Chỉ hủy lô hết hạn còn tồn, không hủy phiếu đã phát sinh bán/hủy. Khách lẻ kỹ thuật không đăng nhập. Giữ đơn POS đã hoàn thành, không dùng luồng trả hàng online. Các phần chưa hoàn thiện: trả hàng POS, tự động áp mã khuyến mãi, barcode, báo cáo giá vốn/hàng hủy, chuyển đổi tồn cũ có lô, form sản phẩm sữa.
+
+## Chuẩn hóa nghiệp vụ quản lý sữa
+Form và danh sách sản phẩm dùng thương hiệu, dung tích, khối lượng, hương vị, mã vạch, đơn vị; không hiển thị size/màu/SEO. Thuộc tính là giá trị gợi ý theo 5 nhóm. Kho phân biệt tồn vật lý/tồn lô/hết hạn/có thể bán/chênh lệch; cảnh báo hiển thị lô thực tế. Đơn hàng mặc định POS, có bộ lọc đơn online cũ. Báo cáo POS tính giá vốn từ PhanBoLoBan, lợi nhuận gộp và giá trị hàng hết hạn/đã hủy. Cài đặt chỉ giữ thông tin cửa hàng và liên kết vận hành. Migration catalog_reports cần chạy sau lots_pos; giữ dữ liệu cũ. Giá trị hủy trước migration chưa biết số lượng không tính vào thiệt hại đã ghi nhận.
