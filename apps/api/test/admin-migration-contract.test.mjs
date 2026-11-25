@@ -23,60 +23,41 @@ const allSource = [baseSource, salesSource, homeSource, moreSource, catalogSourc
 
 const expectedControllers = [
   "AdminAttributesController",
-  "AdminBannersController",
   "AdminCategoriesController",
-  "AdminCollectionsController",
   "AdminCouponsController",
   "AdminCustomersController",
-  "AdminFlashSalesController",
-  "AdminHomepageBlocksController",
-  "AdminHomepageController",
   "AdminInventoryController",
-  "AdminLookbookController",
-  "AdminMenusController",
   "AdminOrdersController",
-  "AdminPagesController",
   "AdminProductsController",
   "AdminPromotionsController",
   "AdminReportsController",
-  "AdminReviewsController",
   "AdminSettingsController",
   "AdminStockReceiptsController",
   "AdminSuppliersController",
   "AdminVariantStockController",
-  "FlashSalesController",
 ];
 
 const expectedRoutes = [
   "api/admin/attributes",
-  "api/admin/banners",
   "api/admin/categories",
-  "api/admin/collections",
   "api/admin/coupons",
   "api/admin/customers",
-  "api/admin/flash-sales",
-  "api/admin/homepage-blocks",
-  "api/admin/homepage",
   "api/admin/inventory",
-  "api/admin/lookbook",
-  "api/admin/menus",
   "api/admin/orders",
-  "api/admin/pages",
   "api/admin/products",
   "api/admin/promotions",
   "api/admin/reports",
-  "api/admin/reviews",
   "api/admin/settings",
   "api/admin/stock-receipts",
   "api/admin/suppliers",
   "api/admin/variant-stock",
-  "api/flash-sales",
 ];
 
-test("Phase 10 registers all 23 legacy API.Admin controller surfaces", () => {
-  assert.equal(expectedControllers.length, 23);
-  assert.equal(expectedRoutes.length, 23);
+test("Admin đăng ký đúng 13 controller nghiệp vụ còn sử dụng", () => {
+  assert.equal(expectedControllers.length, 13);
+  assert.equal(expectedRoutes.length, 13);
   for (const name of expectedControllers) assert.match(moduleSource, new RegExp(`\\b${name}\\b`));
+  for (const name of ["AdminBannersController","AdminCollectionsController","AdminFlashSalesController","FlashSalesController","AdminHomepageBlocksController","AdminHomepageController","AdminLookbookController","AdminMenusController","AdminPagesController","AdminReviewsController"]) assert.doesNotMatch(moduleSource, new RegExp(`\\b${name}\\b`));
   for (const route of expectedRoutes) assert.ok(allSource.includes(`@Controller(\"${route}\")`), `missing ${route}`);
 });
 

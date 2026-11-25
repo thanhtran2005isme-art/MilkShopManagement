@@ -1,6 +1,6 @@
 # MilkShopManagement
 
-Dự án độc lập được tái sử dụng từ KaitoKidShop để kiểm thử Web Admin quản lý cửa hàng sữa. Giai đoạn hiện tại chỉ tách Web/API; nghiệp vụ và nhận diện thời trang chưa chuyển đổi. Không dùng chung database hoặc thông tin tích hợp thật với dự án gốc.
+Dự án độc lập được tái sử dụng từ KaitoKidShop để kiểm thử Web Admin quản lý cửa hàng sữa. Giai đoạn hiện tại tách Web Admin/API; nghiệp vụ và nhận diện thời trang chưa chuyển đổi. Không dùng chung database hoặc thông tin tích hợp thật với dự án gốc.
 
 ## Cấu trúc hiện tại
 
@@ -117,7 +117,7 @@ scripts\stop-all.bat
 
 Web mặc định gọi backend Node `:5300`.
 
-Mở `http://localhost:5173/admin/login` để kiểm thử Admin (port Vite thực tế xem terminal). Web khách hàng vẫn được giữ để tránh ảnh hưởng route/API dùng chung, không nằm trong phạm vi kiểm thử hiện tại.
+Mở `http://localhost:5173/admin/login` để kiểm thử Admin (port Vite thực tế xem terminal). Chỉ còn giao diện Admin; route `/` chuyển đến `/admin/login`. API/SQL dùng chung cho đơn hàng vẫn được giữ đến khi tách nghiệp vụ bán tại quầy.
 
 ## Final gates
 

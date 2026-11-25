@@ -3,25 +3,13 @@ import { APP_INTERCEPTOR } from "@nestjs/core";
 import { WalletModule } from "../wallet/wallet.module.js";
 import {
   AdminAttributesController,
-  AdminBannersController,
   AdminCategoriesController,
 } from "./admin-content-base.controller.js";
 import {
-  AdminCollectionsController,
   AdminCouponsController,
-  AdminFlashSalesController,
-  FlashSalesController,
 } from "./admin-content-sales.controller.js";
 import {
-  AdminHomepageBlocksController,
-  AdminHomepageController,
-} from "./admin-content-home.controller.js";
-import {
-  AdminLookbookController,
-  AdminMenusController,
-  AdminPagesController,
   AdminPromotionsController,
-  AdminReviewsController,
   AdminSettingsController,
   AdminSuppliersController,
 } from "./admin-content-more.controller.js";
@@ -47,30 +35,20 @@ import { AdminVietQrService } from "./admin-vietqr.service.js";
   imports: [WalletModule],
   controllers: [
     AdminAttributesController,
-    AdminBannersController,
     AdminCategoriesController,
-    AdminCollectionsController,
     AdminCouponsController,
     AdminCustomersController,
-    AdminFlashSalesController,
-    AdminHomepageBlocksController,
-    AdminHomepageController,
     AdminInventoryController,
-    AdminLookbookController,
-    AdminMenusController,
     AdminOrderAfterSalesController,
     AdminOrdersController,
-    AdminPagesController,
     AdminPaymentController,
     AdminProductsController,
     AdminPromotionsController,
     AdminReportsController,
-    AdminReviewsController,
     AdminSettingsController,
     AdminStockReceiptsController,
     AdminSuppliersController,
     AdminVariantStockController,
-    FlashSalesController,
   ],
   providers: [
     AdminStaffGuard,

@@ -2,7 +2,7 @@
 
 ## Overview
 
-MilkShopManagement là monorepo với **một backend NestJS Node** phục vụ Web/Admin và MariaDB. Phạm vi kiểm thử hiện tại chỉ là Web Admin.
+MilkShopManagement là monorepo với **một backend NestJS Node** phục vụ Web/Admin và MariaDB. Phạm vi kiểm thử và giao diện hiện tại chỉ là Web Admin.
 
 ```text
  apps/web (React/Vite) ─── HTTP :5300 ── apps/api (NestJS)
@@ -21,7 +21,7 @@ Legacy ASP.NET Core services đã retire. Không có gateway/service C# song son
 
 ```text
 apps/api       NestJS + Prisma backend
-apps/web       React + TypeScript + Vite; customer + admin surfaces
+apps/web       React + TypeScript + Vite; Admin only
 database       MariaDB fresh schema nền + migrations
 scripts        Windows launchers/runtime gates
 docs           durable project context
@@ -121,7 +121,7 @@ Web dùng một backend origin duy nhất:
 2. `VITE_API_BASE_URL`
 3. fallback `http://localhost:5300`
 
-Customer/Auth/Admin đều đi qua origin này.
+Auth/Admin đi qua origin này; API khách hàng dùng chung còn giữ để chuyển đổi nghiệp vụ sau.
 
 ## Media
 

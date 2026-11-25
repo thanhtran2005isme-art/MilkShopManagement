@@ -4,12 +4,12 @@ Cập nhật 2026-11-25. Repository độc lập: `thanhtran2005isme-art/MilkSho
 
 ## Hiện trạng
 
-- `apps/web`: React, TypeScript, Vite; giữ cả route khách hàng kế thừa vì chia sẻ API nhưng chỉ kiểm thử Admin.
+- `apps/web`: React, TypeScript, Vite; chỉ giữ route Admin; giao diện khách hàng đã gỡ.
 - `apps/api`: NestJS 11, Prisma 7, MariaDB, REST/JWT/RBAC và Socket.IO /chatHub. Port mặc định 5300.
 - `database/`: giữ schema và migration gốc; chưa đổi mô hình ngành hàng. Phải dùng database thử nghiệm riêng; không trỏ đến database dự án gốc.
 - `run.bat` và `scripts/run-all.bat`: khởi động API, chờ health, sau đó khởi động Web. Vite thường ở 5173.
 - Không còn ứng dụng Mobile/Expo hoặc launcher tương ứng. CI Web, test API và final-cutover contract đã được điều chỉnh theo phạm vi mới.
-- Không thay đổi giao diện, nghiệp vụ, dữ liệu hoặc migration trong bước tách này. Các quy tắc nghiệp vụ đang có tiếp tục được giữ.
+- Gỡ giao diện bán hàng công khai, các trang Admin CMS, ví, chat, giao vận, đánh giá và bộ sưu tập; giữ khuyến mãi/mã giảm giá. Một số service backend và schema cũ vẫn giữ vì liên quan đơn hàng, test và dữ liệu. Hồ sơ Admin dùng phiên nhân viên; chỉnh sửa nhân viên qua module nhân sự. Các quy tắc nghiệp vụ đang có tiếp tục được giữ.
 
 ## Kiểm tra
 

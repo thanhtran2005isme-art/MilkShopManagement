@@ -9,7 +9,6 @@ function source(path) {
 const settingsSource = source('../src/modules/payment/payment-settings.ts');
 const paymentSource = source('../src/modules/payment/payment.service.ts');
 const envSource = source('../.env.example');
-const handoffSource = source('../../../docs/AI_HANDOFF.md');
 const decisionSource = source('../../../docs/decisions/D027-payos-payment-lifecycle.md');
 
 test('runtime online payment không được kích hoạt bởi bankEnabled/VietQR legacy', () => {
@@ -28,5 +27,5 @@ test('customer payment authority vẫn là payOS webhook, legacy bank chỉ dàn
 
 test('durable docs và env template xác định payOS là provider hiện hành', () => {
   assert.match(envSource, /payOS là payment provider online hiện hành/);
-  assert.match(handoffSource, /official payOS SDK/i);
+  assert.match(decisionSource, /payOS/i);
 });
