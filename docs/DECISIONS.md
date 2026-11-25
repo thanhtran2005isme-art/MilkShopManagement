@@ -299,3 +299,7 @@ Giữ một trust boundary tại API.Auth, tái sử dụng session/JWT hiện c
 ## D029 — MilkShopManagement chỉ giữ Web/API
 
 **Ngày:** 2026-11-25. Loại bỏ ứng dụng Expo/React Native và launcher, CI, script cài/chạy liên quan. Giữ Web Admin và API/database contract kế thừa. D029 thay thế các yêu cầu runtime Mobile cũ (bao gồm D002 và D024 phần client); các quyết định backend còn hiệu lực nếu không xung đột. Web khách hàng vẫn tồn tại, không thuộc phạm vi QA hiện tại. Không dùng chung DB hoặc credential thật với dự án gốc.
+
+## D030 — Database MilkShop tách biệt
+
+Schema chuẩn duy nhất là `database/MilkShop_MariaDB.sql` (55 bảng tương thích, không DROP, dữ liệu mẫu sữa). Chỉ kết nối `milkshop`. Admin được tạo bằng BCrypt từ biến môi trường riêng, không dùng mật khẩu mẫu kế thừa. Các bảng phục vụ service cũ chưa bị xóa. CI MariaDB thật kiểm tra import, health, đăng nhập và CRUD sản phẩm. Không áp dụng SQL legacy lên database gốc.

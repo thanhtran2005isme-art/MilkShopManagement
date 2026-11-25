@@ -32,14 +32,14 @@ function config() {
   const key = process.env.JWT_KEY;
   if (!key || key === "CHANGE_ME") {
     throw new UnauthorizedException(
-      "Node API chưa được cấu hình JWT_KEY tương thích C#.",
+      "Node API chưa được cấu hình JWT_KEY.",
     );
   }
   const expiryMinutes = Number(process.env.JWT_EXPIRY_MINUTES ?? 60);
   return {
     key,
-    issuer: process.env.JWT_ISSUER ?? "KaitoKid.API.Auth",
-    audience: process.env.JWT_AUDIENCE ?? "KaitoKid.Client",
+    issuer: process.env.JWT_ISSUER ?? "MilkShop.API.Auth",
+    audience: process.env.JWT_AUDIENCE ?? "MilkShop.Admin",
     expiryMinutes:
       Number.isFinite(expiryMinutes) && expiryMinutes > 0
         ? Math.floor(expiryMinutes)

@@ -12,7 +12,7 @@ MilkShopManagement là monorepo với **một backend NestJS Node** phục vụ 
                                            └─ background workers
                                                       │
                                                       ▼
-                                             MariaDB kaitokid
+                                             MariaDB milkshop
 ```
 
 Legacy ASP.NET Core services đã retire. Không có gateway/service C# song song và không có fallback runtime về `5053`, `5265`, `5089`, `5155`.
@@ -47,21 +47,15 @@ Node là owner duy nhất của background workers. Các worker quan trọng v�
 
 ## Persistence
 
-Runtime database là MariaDB/MySQL-compatible, database riêng cho MilkShopManagement. SQL kế thừa có thể ghi tên `kaitokid`; rà soát trước khi import, không sử dụng DB dự án gốc.
+Runtime chỉ chấp nhận database `milkshop` (MariaDB 10.4+). Prisma CLI và adapter kiểm tra tên database.
 
 Fresh schema nền:
 
 ```text
-database/KaitoKid_MariaDB.sql
+database/MilkShop_MariaDB.sql
 ```
 
-Contract hiện hành cần chạy thêm wallet migration cả với fresh import và DB đã tồn tại:
-
-```text
-database/migrations/20261006_wallet_refund_withdrawal.sql
-```
-
-Sau bước này database có **55 base tables**. Ba bảng tài chính mới:
+Schema đã hợp nhất các bảng ví tương thích; không cần chạy migration cũ cho fresh import. Database có **55 base tables**. Ba bảng tài chính mới:
 
 - `ViDienTu`
 - `GiaoDichVi`

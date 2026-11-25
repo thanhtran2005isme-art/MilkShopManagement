@@ -31,9 +31,8 @@ The legacy ASP.NET Core `backend/` tree is retired. Do not reintroduce runtime f
 
 ## Backend invariants
 
-- Use a separate MariaDB instance/database for MilkShopManagement. The inherited SQL may still refer to `kaitokid`; do not import it into the original project's database.
-- REST, Auth, Admin, Customer, media and Socket.IO are served by `apps/api`.
-- Realtime path is `/chatHub` on the same Node origin.
+- Use only MariaDB database `milkshop` with `database/MilkShop_MariaDB.sql`. Never import legacy scripts into the original project's database.
+- REST/Auth/Admin and compatibility services are served by `apps/api`; chat is not registered.
 - Background workers are owned by Node. Critical workers remain individually feature-flagged.
 - Do not run `prisma migrate reset`, `prisma migrate dev` or `prisma db push` on an existing data-bearing database.
 - Use `prisma db pull` / `npm run db:introspect` for introspection.

@@ -113,7 +113,7 @@ export class JwtAuthGuard implements CanActivate {
 
     const key = process.env.JWT_KEY;
     if (!key || key === "CHANGE_ME") {
-      throw new UnauthorizedException("Node API chưa được cấu hình JWT_KEY tương thích C#.");
+      throw new UnauthorizedException("Node API chưa được cấu hình JWT_KEY.");
     }
 
     try {
@@ -121,8 +121,8 @@ export class JwtAuthGuard implements CanActivate {
       const payload = verifyHs256(
         token,
         key,
-        process.env.JWT_ISSUER ?? "KaitoKid.API.Auth",
-        process.env.JWT_AUDIENCE ?? "KaitoKid.Client",
+        process.env.JWT_ISSUER ?? "MilkShop.API.Auth",
+        process.env.JWT_AUDIENCE ?? "MilkShop.Admin",
       );
 
       const rawId = firstClaim(payload, NAME_ID_KEYS);

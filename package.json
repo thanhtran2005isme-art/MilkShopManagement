@@ -17,6 +17,7 @@
     "backend:node:build": "npm run backend:build",
     "backend:node:db:introspect": "npm run backend:db:introspect",
     "backend:node:db:audit": "npm run backend:db:audit",
-    "phase10:check": "npm run web:lint && npm run web:build && npm run backend:test"
+    "phase10:check": "npm run web:lint && npm run web:build && npm run backend:test",
+    "backend:db:seed-admin": "npm --prefix apps/api run db:seed-admin"
   }
 }

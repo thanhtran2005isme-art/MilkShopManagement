@@ -11,12 +11,12 @@ async function request(path) {
   return response;
 }
 
-test("live Node health dùng đúng MariaDB 52 tables", async () => {
+test("live Node health dùng đúng MariaDB 55 tables", async () => {
   const response = await request("/health");
   const json = await response.json();
   assert.equal(json.status, "ok");
-  assert.equal(json.database?.expectedTables, 52);
-  assert.equal(json.database?.actualTables, 52);
+  assert.equal(json.database?.expectedTables, 55);
+  assert.equal(json.database?.actualTables, 55);
   assert.deepEqual(json.database?.missingTables, []);
 });
 

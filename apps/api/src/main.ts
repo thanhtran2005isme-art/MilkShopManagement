@@ -24,9 +24,9 @@ function configureSwagger(app: NestExpressApplication): boolean {
   if (!isSwaggerEnabled()) return false;
 
   const config = new DocumentBuilder()
-    .setTitle("KaitoKidShop Node API")
+    .setTitle("MilkShopManagement API")
     .setDescription(
-      "Danh sách REST API của KaitoKidShop. Swagger khai báo JWT toàn cục để Try it out có thể gửi access token tới endpoint được bảo vệ; endpoint public vẫn có thể gọi mà không cần token.",
+      "Danh sách REST API của MilkShopManagement. Swagger khai báo JWT toàn cục để Try it out có thể gửi access token tới endpoint được bảo vệ; endpoint public vẫn có thể gọi mà không cần token.",
     )
     .setVersion("1.0.0")
     .addBearerAuth(
@@ -34,7 +34,7 @@ function configureSwagger(app: NestExpressApplication): boolean {
         type: "http",
         scheme: "bearer",
         bearerFormat: "JWT",
-        description: "Nhập access token KaitoKid, không cần tự thêm tiền tố Bearer.",
+        description: "Nhập access token MilkShop, không cần tự thêm tiền tố Bearer.",
       },
       "kaitokid-jwt",
     )
@@ -48,7 +48,7 @@ function configureSwagger(app: NestExpressApplication): boolean {
 
   SwaggerModule.setup("docs", app, document, {
     jsonDocumentUrl: "docs-json",
-    customSiteTitle: "KaitoKid API Docs",
+    customSiteTitle: "MilkShop API Docs",
     swaggerOptions: {
       persistAuthorization: true,
       displayRequestDuration: true,

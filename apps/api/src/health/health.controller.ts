@@ -10,11 +10,12 @@ export class HealthController {
     const database = await this.databaseAudit.audit();
     return {
       status: database.compatible ? "ok" : "degraded",
-      service: "KaitoKid Node API migration",
+      service: "MilkShopManagement API",
       database: {
         expectedTables: database.expectedTableCount,
         actualTables: database.actualTableCount,
         missingTables: database.missingTables,
+        missingPermissions: database.missingPermissions,
       },
     };
   }
