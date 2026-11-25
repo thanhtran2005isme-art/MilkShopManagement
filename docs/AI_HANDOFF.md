@@ -28,3 +28,6 @@ Tài liệu lịch sử được lưu trong docs/history; không dùng các hư�
 - CI kiểm tra thêm contract Admin/RBAC và cấu trúc Web/API. Các harness realtime của dự án nguồn là di sản, không còn dùng để nghiệm thu phạm vi Web Admin hiện tại.
 
 - API sản phẩm hỗ trợ ThuongHieu, DungTichMl, HuongVi, DonViTinh và validate dữ liệu; áp dụng RBAC cho CRUD. CI có job import MariaDB thật và gọi API đăng nhập/CRUD.
+
+## Quy tắc Git (yêu cầu chủ repository)
+Chỉ làm việc và commit trực tiếp trên nhánh `main`. Không tạo nhánh phụ hoặc PR mới. Kiểm tra build/test phù hợp và báo rõ trạng thái xác minh. Không force-push.

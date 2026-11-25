@@ -51,19 +51,13 @@ For any UI/UX change:
 
 ## Workflow
 
-For meaningful changes:
+For all future changes:
 
-1. Start from current `main`.
-2. Create a focused short-lived branch.
-3. Change only required files.
-4. Validate relevant build/tests/runtime gates.
-5. Commit with a Vietnamese description.
-6. Open a PR and merge only when clean.
-7. Update docs when architecture, operations or durable decisions change.
-
-### Fix completion and merge rule
-
-When a bug fix has been verified as correct and its PR is clean/mergeable, merge it into `main` without waiting for another user confirmation. Prefer squash merge so `main` receives one meaningful fix commit. Only leave a verified fix branch/PR unmerged when the user explicitly asks to keep it open or when a required validation/merge gate is still unresolved.
+1. Work exclusively on `main`; do not create additional branches or pull requests.
+2. Read current `main` and required documentation, then change only necessary files.
+3. Validate relevant builds/tests before committing where possible; inspect CI after pushing.
+4. Commit directly to `main` with a Vietnamese description. Never force-push.
+5. Update docs for durable changes. Report any unverified checks or blockers explicitly.
 
 ### Commit granularity
 
@@ -71,7 +65,7 @@ Default: **one task/fix/PHASE = one aggregate commit**.
 
 - Do not commit file-by-file or step-by-step.
 - Batch all changes for the same task, validate, then commit once.
-- Prefer squash merge so `main` receives one meaningful commit.
+- Use one aggregate commit directly on `main`.
 - Split only when work items are truly independent and need separate rollback/review.
 
 ### Commit language
