@@ -85,8 +85,8 @@ test("launchers không còn dotnet/C# runtime và Node owns critical workers", (
   assert.match(api, /BACKGROUND_WORKER_OWNER=node/);
   assert.match(api, /CART_SWEEPER_ENABLED=true/);
   assert.match(api, /PAYMENT_SWEEPER_ENABLED=true/);
-  assert.match(api, /CHAT_IDLE_SWEEPER_ENABLED=true/);
-  assert.match(api, /SHIPPING_SIMULATOR_ENABLED=true/);
+  assert.match(api, /CHAT_IDLE_SWEEPER_ENABLED=false/);
+  assert.match(api, /SHIPPING_SIMULATOR_ENABLED=false/);
 });
 
 test("root package scripts không còn dotnet backend test", () => {

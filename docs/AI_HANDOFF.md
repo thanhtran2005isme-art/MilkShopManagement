@@ -5,8 +5,8 @@ Cập nhật 2026-11-25. Repository độc lập: `thanhtran2005isme-art/MilkSho
 ## Hiện trạng
 
 - `apps/web`: React, TypeScript, Vite; chỉ giữ route Admin; giao diện khách hàng đã gỡ.
-- `apps/api`: NestJS 11, Prisma 7, MariaDB, REST/JWT/RBAC và Socket.IO /chatHub. Port mặc định 5300.
-- `database/`: giữ schema và migration gốc; chưa đổi mô hình ngành hàng. Phải dùng database thử nghiệm riêng; không trỏ đến database dự án gốc.
+- `apps/api`: NestJS 11, Prisma 7, MariaDB, REST/JWT/RBAC. Port mặc định 5300.
+- `database/MilkShop_MariaDB.sql`: schema 55 bảng tương thích, tạo database milkshop độc lập, không DROP dữ liệu; seed danh mục/sản phẩm sữa. Runtime từ chối database khác. Seed Admin bằng npm run backend:db:seed-admin.
 - `run.bat` và `scripts/run-all.bat`: khởi động API, chờ health, sau đó khởi động Web. Vite thường ở 5173.
 - Không còn ứng dụng Mobile/Expo hoặc launcher tương ứng. CI Web, test API và final-cutover contract đã được điều chỉnh theo phạm vi mới.
 - Gỡ giao diện bán hàng công khai, các trang Admin CMS, ví, chat, giao vận, đánh giá và bộ sưu tập; giữ khuyến mãi/mã giảm giá. Một số service backend và schema cũ vẫn giữ vì liên quan đơn hàng, test và dữ liệu. Hồ sơ Admin dùng phiên nhân viên; chỉnh sửa nhân viên qua module nhân sự. Các quy tắc nghiệp vụ đang có tiếp tục được giữ.
@@ -18,7 +18,7 @@ Chạy `npm run web:lint`, `npm run web:build`, `npm run backend:build` và `npm
 ## Bước tiếp theo
 
 1. Xác nhận build và đăng nhập Admin.
-2. Tách dữ liệu, thương hiệu, nghiệp vụ sữa (sản phẩm, lô, hạn sử dụng).
+2. Hoàn thiện UI sữa, nghiệp vụ bán tại quầy, lô và hạn sử dụng.
 3. Thiết kế Test Case; Katalon Studio, JMeter, báo cáo PASS/FAIL.
 
 Tài liệu lịch sử được lưu trong docs/history; không dùng các hướng dẫn runtime cũ làm cấu hình hiện tại.
@@ -26,3 +26,5 @@ Tài liệu lịch sử được lưu trong docs/history; không dùng các hư�
 ## Tinh giản backend/UI (2026-11-25)
 - Gỡ các module độc lập của cửa hàng trực tuyến và controller CMS Admin không còn sử dụng. Chat, ví và tìm kiếm ảnh/gợi ý không được đăng ký API trong runtime. Giữ service ví, cart, payment, shipping và review kế thừa khi còn liên quan hợp đồng đơn hàng hoặc regression test; không xóa bảng trước khi thiết kế bán hàng tại quầy.
 - CI kiểm tra thêm contract Admin/RBAC và cấu trúc Web/API. Các harness realtime của dự án nguồn là di sản, không còn dùng để nghiệm thu phạm vi Web Admin hiện tại.
+
+- API sản phẩm hỗ trợ ThuongHieu, DungTichMl, HuongVi, DonViTinh và validate dữ liệu; áp dụng RBAC cho CRUD. CI có job import MariaDB thật và gọi API đăng nhập/CRUD.

@@ -1,8 +1,7 @@
 /**
- * Contract bảng MariaDB hiện hành của KaitoKid.
+ * Contract bảng MariaDB tương thích của MilkShop.
  *
- * 52 bảng nền từ database/KaitoKid_MariaDB.sql + 3 bảng Ví KaitoKid được
- * bổ sung bởi migration 20261006_wallet_refund_withdrawal.sql.
+ * 55 bảng từ database/MilkShop_MariaDB.sql (bao gồm các bảng ví tương thích).
  * Đây là contract bảo toàn dữ liệu khi Node API khởi động/audit database.
  */
 export const LEGACY_TABLES = [

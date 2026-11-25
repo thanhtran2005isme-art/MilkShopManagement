@@ -74,8 +74,8 @@ export function tryAuthenticateBearer(
     ) {
       return null;
     }
-    const issuer = process.env.JWT_ISSUER ?? "KaitoKid.API.Auth";
-    const audience = process.env.JWT_AUDIENCE ?? "KaitoKid.Client";
+    const issuer = process.env.JWT_ISSUER ?? "MilkShop.API.Auth";
+    const audience = process.env.JWT_AUDIENCE ?? "MilkShop.Admin";
     if (payload.iss !== issuer) return null;
     const audiences = Array.isArray(payload.aud)
       ? payload.aud

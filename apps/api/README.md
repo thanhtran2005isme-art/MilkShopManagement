@@ -1,52 +1,5 @@
-# KaitoKid Node API
+# MilkShop API
 
-`apps/api` là backend runtime duy nhất của KaitoKidShop sau khi retire ASP.NET Core C#.
+NestJS 11 + Prisma 7 + MariaDB. Follow root README for importing `database/MilkShop_MariaDB.sql`, configuring `.env`, seeding admin, starting backend and testing `/health`.
 
-## Runtime
-
-- NestJS 11 + TypeScript
-- Prisma 7 + `@prisma/adapter-mariadb`
-- MariaDB `kaitokid`
-- REST/Auth/Admin/Customer/media trên cùng origin
-- Socket.IO path `/chatHub`
-- Port mặc định `5300`
-
-## Chuẩn bị local
-
-```bat
-cd apps\api
-copy .env.example .env
-npm install
-npm run db:audit
-```
-
-Điền `DATABASE_URL`, `JWT_KEY` và các secret tích hợp cần thiết trong `.env`. Không commit `.env`.
-
-## Database safety
-
-- Fresh schema: `database/KaitoKid_MariaDB.sql`.
-- Existing DB migrations: `database/migrations/`.
-- Không chạy `prisma migrate reset`, `prisma migrate dev` hoặc `prisma db push` trên database đang có dữ liệu.
-- Khi cần introspection: `npm run db:introspect`.
-
-## Chạy
-
-```bat
-npm run start:dev
-```
-
-Hoặc từ root:
-
-```bat
-scripts\run-backend.bat
-```
-
-## Gate
-
-```bat
-scripts\node-final-cutover-check.bat
-scripts\node-final-runtime-smoke.bat
-scripts\node-protected-runtime-parity.bat
-scripts\node-concurrency-race-gate.bat
-scripts\node-realtime-runtime-gate.bat
-```
+`npm run db:seed-admin` creates RBAC and an admin with BCrypt. `npm run start:dev` starts API on port 5300. `npm run test:milkshop-runtime` requires a running disposable QA database and seeded Admin.

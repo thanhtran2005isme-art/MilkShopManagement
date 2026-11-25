@@ -41,3 +41,60 @@ jobs:
 
       - name: Admin, RBAC and runtime structure contracts
         run: node --test test/admin-migration-contract.test.mjs test/auth-rbac-contract.test.mjs test/final-cutover-contract.test.mjs
+
+  milkshop-mariadb-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mariadb:
+        image: mariadb:10.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root-only
+          MYSQL_DATABASE: milkshop
+          MYSQL_USER: milkshop
+          MYSQL_PASSWORD: ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -pci-root-only"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DATABASE_URL: mysql://milkshop:ci@127.0.0.1:3306/milkshop
+      NODE_ENV: test
+      PORT: 5300
+      JWT_ISSUER: MilkShop.API.Auth
+      JWT_AUDIENCE: MilkShop.Admin
+      MILKSHOP_ADMIN_EMAIL: admin@milkshop.local
+      CART_SWEEPER_ENABLED: "false"
+      PAYMENT_SWEEPER_ENABLED: "false"
+      SHIPPING_SIMULATOR_ENABLED: "false"
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Generate ephemeral QA credentials
+        run: |
+          echo "JWT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "MILKSHOP_ADMIN_PASSWORD=$(openssl rand -hex 24)" >> "$GITHUB_ENV"
+      - name: Import fresh MilkShop schema twice (idempotency)
+        run: |
+          docker exec -i -e MYSQL_PWD=ci-root-only ${{ job.services.mariadb.id }} mysql -u root < ../../database/MilkShop_MariaDB.sql
+          docker exec -i -e MYSQL_PWD=ci-root-only ${{ job.services.mariadb.id }} mysql -u root < ../../database/MilkShop_MariaDB.sql
+      - run: npm install --no-audit --no-fund
+      - run: npm run db:seed-admin
+      - name: Start API and run live database tests
+        run: |
+          node dist/main.js > /tmp/milkshop-api.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true; cat /tmp/milkshop-api.log' EXIT
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:5300/health | grep -q '"status":"ok"'; then break; fi
+            sleep 1
+          done
+          npm run test:milkshop-runtime

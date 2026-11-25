@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions
 chcp 65001 >nul
-title KaitoKid - Node API
+title MilkShop - Node API
 
 for %%I in ("%~dp0..") do set "ROOT=%%~fI"
 set "API=%ROOT%\apps\api"
@@ -27,8 +27,8 @@ if errorlevel 1 (
 set "BACKGROUND_WORKER_OWNER=node"
 if not defined CART_SWEEPER_ENABLED set "CART_SWEEPER_ENABLED=true"
 if not defined PAYMENT_SWEEPER_ENABLED set "PAYMENT_SWEEPER_ENABLED=true"
-if not defined CHAT_IDLE_SWEEPER_ENABLED set "CHAT_IDLE_SWEEPER_ENABLED=true"
-if not defined SHIPPING_SIMULATOR_ENABLED set "SHIPPING_SIMULATOR_ENABLED=true"
+if not defined CHAT_IDLE_SWEEPER_ENABLED set "CHAT_IDLE_SWEEPER_ENABLED=false"
+if not defined SHIPPING_SIMULATOR_ENABLED set "SHIPPING_SIMULATOR_ENABLED=false"
 if not defined IMAGE_INDEXER_ENABLED set "IMAGE_INDEXER_ENABLED=false"
 
 pushd "%API%"
