@@ -120,12 +120,9 @@ export default function AdminInventory() {
       {/* HERO */}
       <section className="inventory-ops-hero">
         <div className="inventory-ops-hero-copy">
-          <span className="inventory-ops-overline">Inventory tracking</span>
+          
           <h1>Theo dõi tồn kho</h1>
-          <p>
-            Xem nhanh tình trạng tồn kho của tất cả sản phẩm. Để nhập hàng → tạo <strong>Phiếu nhập</strong>.
-            Để điều chỉnh khi kiểm kê → mở chi tiết biến thể.
-          </p>
+          <p>Theo dõi số lượng tồn và lập phiếu nhập hàng.</p>
         </div>
 
         <div className="inventory-ops-hero-actions">

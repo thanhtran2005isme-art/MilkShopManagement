@@ -52,8 +52,8 @@ const PROMOTION_TYPE_LABELS: Record<PromotionType, string> = {
 
 const STATUS_LABELS = {
   active: 'Đang chạy',
-  scheduled: 'Sap dien ra',
-  ended: 'Da ket thuc',
+  scheduled: 'Sắp diễn ra',
+  ended: 'Đã kết thúc',
   draft: 'Bản nháp',
 } as const;
 
@@ -306,11 +306,11 @@ export default function AdminPromotions() {
       if (editId) {
         const result = await promotionApi.update(editId, payload);
         if (!result.success) { setError(result.error || 'Lỗi cập nhật.'); return; }
-        showFeedback('Đã cập nhật chuong trinh khuyến mãi.');
+        showFeedback('Đã cập nhật chương trình khuyến mãi.');
       } else {
         const result = await promotionApi.create(payload);
         if (!result.success) { setError(result.error || 'Lỗi tạo mới.'); return; }
-        showFeedback('Đã tạo chuong trinh khuyến mãi mới.');
+        showFeedback('Đã tạo chương trình khuyến mãi mới.');
       }
       await loadPromotions();
       closeForm();
@@ -327,7 +327,7 @@ export default function AdminPromotions() {
     }
 
     const accepted = await confirm({
-      title: 'Xóa chuong trinh khuyến mãi',
+      title: 'Xóa chương trình khuyến mãi',
       message: `Chuong trinh "${promotion.name}" se bi xóa khoi danh sách khuyến mãi.`,
       confirmLabel: 'Xóa chuong trinh',
       tone: 'danger',
@@ -340,7 +340,7 @@ export default function AdminPromotions() {
 
     const result = await promotionApi.delete(promotionId);
     if (result.success) {
-      showFeedback('Đã xóa chuong trinh khuyến mãi.');
+      showFeedback('Đã xóa chương trình khuyến mãi.');
       await loadPromotions();
     } else {
       setFeedback(result.error || 'Không thể xóa.');
@@ -369,8 +369,8 @@ export default function AdminPromotions() {
     <div className="marketing-page">
       <div className="page-header">
         <div>
-          <h1>Chuong trinh khuyến mãi</h1>
-          <p className="marketing-page-subtitle">Quản lý thoi gian chay, đối tượng ap dung và sản phẩm mục tiêu cho tung chuong trinh.</p>
+          <h1>Chương trình khuyến mãi</h1>
+          <p className="marketing-page-subtitle">Quản lý thời gian, điều kiện và sản phẩm áp dụng.</p>
         </div>
         <div className="page-actions">
           <button className="btn btn-primary" onClick={openCreate}>
@@ -400,7 +400,7 @@ export default function AdminPromotions() {
             <AdminIcon name="fa fa-calendar-check" />
           </div>
           <div className="stat-content-small">
-            <span className="stat-label-small">Sap dien ra</span>
+            <span className="stat-label-small">Sắp diễn ra</span>
             <h3 className="stat-value-small">{stats.scheduled}</h3>
           </div>
         </div>
@@ -418,7 +418,7 @@ export default function AdminPromotions() {
             <AdminIcon name="fa fa-clock-rotate-left" />
           </div>
           <div className="stat-content-small">
-            <span className="stat-label-small">Da ket thuc</span>
+            <span className="stat-label-small">Đã kết thúc</span>
             <h3 className="stat-value-small">{stats.ended}</h3>
           </div>
         </div>
@@ -439,9 +439,9 @@ export default function AdminPromotions() {
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang chạy</option>
-            <option value="scheduled">Sap dien ra</option>
+            <option value="scheduled">Sắp diễn ra</option>
             <option value="draft">Bản nháp</option>
-            <option value="ended">Da ket thuc</option>
+            <option value="ended">Đã kết thúc</option>
           </select>
           <select
             className="filter-select"
@@ -459,7 +459,7 @@ export default function AdminPromotions() {
         {filteredPromotions.length === 0 ? (
           <div className="marketing-empty-state">
             <AdminIcon name="fa fa-tags" />
-            <h3>Chưa có chuong trinh phù hợp</h3>
+            <h3>Chưa có chương trình phù hợp</h3>
             <p>Tạo một chuong trinh mới hoặc bo nhe bộ lọc de xem toàn bộ danh sách.</p>
           </div>
         ) : (
@@ -543,7 +543,7 @@ export default function AdminPromotions() {
           <div className="modal-dialog modal-xl marketing-modal" onClick={(event) => event.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h3>{editId ? 'Cập nhật chuong trinh khuyến mãi' : 'Tạo chuong trinh khuyến mãi'}</h3>
+                <h3>{editId ? 'Cập nhật chương trình khuyến mãi' : 'Tạo chương trình khuyến mãi'}</h3>
                 <button className="modal-close" onClick={closeForm}>
                   <AdminIcon name="fa fa-times" />
                 </button>
@@ -733,7 +733,7 @@ export default function AdminPromotions() {
                   <div className="marketing-preview-card">
                     <div className={`marketing-status-pill ${previewStatus}`}>{STATUS_LABELS[previewStatus]}</div>
                     <h3>{form.name || 'Ten chuong trinh se hiển thị o day'}</h3>
-                    <p>{form.description || 'Mô tả ngắn cho chuong trinh khuyến mãi.'}</p>
+                    <p>{form.description || 'Mô tả ngắn cho chương trình khuyến mãi.'}</p>
                     <div className="marketing-preview-discount">-{form.discountPercent}%</div>
                     <ul className="marketing-preview-list">
                       <li>{PROMOTION_TYPE_LABELS[form.type]}</li>

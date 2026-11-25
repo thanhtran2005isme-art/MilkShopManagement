@@ -473,12 +473,9 @@ export default function AdminCategories() {
         <>
       <section className="taxonomy-hero">
         <div className="taxonomy-hero-copy">
-          <span className="taxonomy-eyebrow">Taxonomy studio</span>
-          <h1>Danh mục và cấu trúc catalog</h1>
-          <p>
-            Quản lý bộ taxonomy core cho toàn bộ catalog. Trang này ưu tiên độ rõ ràng: nhìn nhanh mục nào đang gắn nhiều
-            sản phẩm, mục nào đang trống, và taxonomy có đồng bộ tốt với dữ liệu sản phẩm hay chưa.
-          </p>
+          
+          <h1>Danh mục sản phẩm</h1>
+          <p>Quản lý nhóm sản phẩm và liên kết danh mục.</p>
 
           <div className="taxonomy-hero-actions">
             <button type="button" className="taxonomy-btn primary" onClick={openAdd}>
@@ -494,14 +491,16 @@ export default function AdminCategories() {
               }}
             >
               <AdminIcon name="fa-rotate-left" />
-              <span>Làm mới view</span>
+              <span>Đặt lại bộ lọc</span>
             </button>
           </div>
         </div>
 
-        <div className="taxonomy-hero-panels">
+        <details className="milkshop-extra">
+          <summary>Xem thêm thống kê danh mục</summary>
+          <div className="taxonomy-hero-panels">
           <article className="taxonomy-hero-card spotlight">
-            <span className="taxonomy-card-kicker">Spotlight</span>
+            <span className="taxonomy-card-kicker">Danh mục sử dụng nhiều nhất</span>
             <strong>{busiestCategory?.name || 'Chưa có dữ liệu'}</strong>
             <p>
               {busiestCategory
@@ -521,7 +520,7 @@ export default function AdminCategories() {
           </article>
 
           <article className="taxonomy-hero-card sync">
-            <span className="taxonomy-card-kicker">Động bo</span>
+            <span className="taxonomy-card-kicker">Đồng bộ danh mục</span>
             <strong>{usageRate}% taxonomy phủ sản phẩm</strong>
             <p>
               {uncategorizedProducts > 0
@@ -530,7 +529,8 @@ export default function AdminCategories() {
             </p>
           </article>
         </div>
-      </section>
+        </details>
+        </section>
 
       <section className="taxonomy-metrics-grid">
         <article className="taxonomy-metric-card">
@@ -783,7 +783,7 @@ export default function AdminCategories() {
         <aside className="taxonomy-side-panel">
           <section className="taxonomy-insight-card">
             <div className="taxonomy-insight-head">
-              <span className="taxonomy-card-kicker">Priority view</span>
+              <span className="taxonomy-card-kicker">Danh mục nổi bật</span>
               <h3>Top danh mục</h3>
             </div>
 
@@ -806,8 +806,8 @@ export default function AdminCategories() {
 
           <section className="taxonomy-insight-card">
             <div className="taxonomy-insight-head">
-              <span className="taxonomy-card-kicker">Health check</span>
-              <h3>Taxonomy signal</h3>
+              <span className="taxonomy-card-kicker">Kiểm tra danh mục</span>
+              <h3>Tình trạng danh mục</h3>
             </div>
 
             <div className="taxonomy-health-stack">
@@ -918,7 +918,7 @@ export default function AdminCategories() {
                     } as CSSProperties
                   }
                 >
-                  <span className="taxonomy-card-kicker">Preview</span>
+                  <span className="taxonomy-card-kicker">Xem trước</span>
                   <div className="taxonomy-preview-head">
                     <span className="taxonomy-card-icon">
                       <AdminIcon name={draftTheme.icon} />

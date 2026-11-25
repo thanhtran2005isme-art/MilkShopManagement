@@ -242,11 +242,9 @@ export default function AdminOrders() {
     <div className="orders-admin-page">
       <div className="page-header orders-page-header">
         <div className="orders-page-copy">
-          <span className="orders-page-eyebrow">Order operations</span>
+          
           <h1>Quản lý đơn hàng & hậu mãi</h1>
-          <p>
-            Carrier báo giao không đồng nghĩa khách đã nhận. Hoàn hàng, kiểm hàng, quarantine và hoàn tiền được xử lý theo workflow riêng để không lệch tồn kho.
-          </p>
+          <p>Theo dõi trạng thái đơn, giao hàng, trả hàng và hoàn tiền.</p>
         </div>
         <div className="page-actions orders-page-actions">
           <button type="button" className="orders-header-button primary" onClick={() => void reload(selected?.numericId)}>
@@ -255,23 +253,10 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      <section className="orders-hero">
-        <div className="orders-hero-main">
-          <span className="orders-hero-badge"><AdminIcon name="fa-shield-halved" /> Business-state safe</span>
-          <h2>{filteredOrders.length} đơn đang hiển thị · {formatCurrency(visibleRevenue)} doanh thu thuần đang tính.</h2>
-          <p>
-            Có {stats.attention} case hậu mãi cần chú ý. Đơn returned không được tính vào doanh thu hiển thị và hàng quarantine không quay lại tồn bán được.
-          </p>
-        </div>
-        <div className="orders-hero-side">
-          <div className={`orders-spotlight-card ${stats.attention > 0 ? 'tone-warning' : 'tone-success'}`}>
-            <div className="orders-card-kicker">Cần xử lý</div>
-            <div className="orders-spotlight-icon"><AdminIcon name={stats.attention > 0 ? 'fa-triangle-exclamation' : 'fa-check-circle'} /></div>
-            <h3>{stats.attention > 0 ? `${stats.attention} case hậu mãi đang mở` : 'Không có case hậu mãi tồn'}</h3>
-            <p>{stats.attention > 0 ? 'Mở chi tiết đơn để duyệt hoàn, nhận hàng thực tế hoặc đối soát hoàn tiền.' : 'Luồng hậu mãi hiện không có việc tồn.'}</p>
-          </div>
-        </div>
-      </section>
+      <div className="milkshop-ops-strip">
+        <span>Doanh thu theo bộ lọc: <strong>{formatCurrency(visibleRevenue)}</strong></span>
+        <span className={stats.attention > 0 ? 'milkshop-warning' : ''}>Hậu mãi cần xử lý: <strong>{stats.attention}</strong></span>
+      </div>
 
       <div className="orders-overview-grid">
         {[
@@ -302,7 +287,7 @@ export default function AdminOrders() {
               className="search-input"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Mã đơn, tên, SĐT hoặc email..."
+              placeholder="Mã đơn, tên, SĐT hoặc email..." aria-label="Tìm đơn hàng"
             />
           </label>
           <label className="orders-date-shell">
@@ -336,9 +321,9 @@ export default function AdminOrders() {
       <div className="table-card orders-table-card">
         <div className="table-toolbar orders-table-toolbar">
           <div className="orders-table-toolbar-copy">
-            <span className="orders-table-toolbar-eyebrow">Order list</span>
+            
             <h2>Hiển thị {filteredOrders.length} / {orders.length} đơn</h2>
-            <p>`completed` và `returned` là outcome của workflow, không phải trạng thái Admin được chọn thủ công.</p>
+            <p>Đơn hoàn thành hoặc trả hàng được cập nhật theo quy trình xử lý.</p>
           </div>
         </div>
 
@@ -418,7 +403,7 @@ export default function AdminOrders() {
             <div className="modal-content orders-modal-content">
               <div className="modal-header orders-modal-header">
                 <div className="orders-modal-heading">
-                  <span className="orders-modal-kicker">Order workspace</span>
+                  
                   <h3>Đơn hàng #{selected.id}</h3>
                   <p>{formatDate(selected.createdAt)} · {getOrderItemCount(selected)} sản phẩm</p>
                 </div>

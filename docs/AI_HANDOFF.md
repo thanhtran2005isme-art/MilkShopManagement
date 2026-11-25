@@ -34,3 +34,6 @@ Chỉ làm việc và commit trực tiếp trên nhánh `main`. Không tạo nh�
 
 ## Giao diện MilkShop
 Trang danh sách sản phẩm và khung Admin chuyển sang nền trung tính, màu xanh, bảng dữ liệu ưu tiên; bỏ hero và thống kê lặp, bỏ bộ lọc giới tính khỏi danh sách, logo MilkShop mới. API lỗi hiển thị lỗi thay vì dữ liệu local. Các trang chức năng khác và form sản phẩm vẫn cần chuyển đổi sâu theo nghiệp vụ sữa.
+
+## Đồng bộ giao diện toàn Admin
+Tất cả route Admin dùng hệ màu MilkShop và quy tắc chung cho header, bảng, form, modal, bộ lọc và KPI trong milkshop-admin.css. Dashboard, đơn hàng, danh mục, thuộc tính, khách hàng, kho, báo cáo, cài đặt, editor sản phẩm, coupon và khuyến mãi được chỉnh nội dung/bố cục trực tiếp. Nhà cung cấp, phiếu nhập, cảnh báo, nhân viên, vai trò và hồ sơ dùng bộ style chung. Không đổi API, route, quyền hay dữ liệu. Cần kiểm tra trực quan các viewport và thao tác thực tế trên máy dev.

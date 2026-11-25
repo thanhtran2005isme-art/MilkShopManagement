@@ -142,7 +142,7 @@ export default function Dashboard() {
     return (
       <div className="dashboard-admin-page">
         <div className="page-header">
-          <h1>Dashboard</h1>
+          <h1>Tổng quan cửa hàng</h1>
         </div>
         <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>
           <AdminIcon name="fa-exclamation-triangle" />
@@ -249,9 +249,9 @@ export default function Dashboard() {
     <div className="dashboard-admin-page">
       <div className="page-header dashboard-page-header">
         <div className="dashboard-page-copy">
-          <span className="dashboard-page-eyebrow">Admin command center</span>
-          <h1>Dashboard</h1>
-          <p>Xem nhanh tình hình cửa hàng. Dữ liệu được load trực tiếp từ database.</p>
+          
+          <h1>Tổng quan cửa hàng</h1>
+          <p>Theo dõi doanh thu, đơn hàng và tồn kho.</p>
         </div>
 
         <div className="page-actions dashboard-page-actions">
@@ -270,9 +270,9 @@ export default function Dashboard() {
       <div className="dashboard-section-heading">
         <div>
           <span>KPI chính</span>
-          <h2>Toàn cảnh kinh doanh</h2>
+          <h2>Kết quả kinh doanh</h2>
         </div>
-        <p>Các chỉ số gọn để nắm tình hình trước khi đi vào từng module chi tiết.</p>
+        
       </div>
 
       <div className="stats-grid">
@@ -282,7 +282,7 @@ export default function Dashboard() {
               <AdminIcon name={card.icon} />
             </div>
             <div className="stat-content">
-              <span className="stat-eyebrow">{card.eyebrow}</span>
+              
               <span className="stat-label">{card.label}</span>
               <h3 className="stat-value">{card.value}</h3>
               <span className={`stat-change ${card.changeType}`}>
@@ -296,16 +296,16 @@ export default function Dashboard() {
       <div className="dashboard-section-heading">
         <div>
           <span>Biểu đồ</span>
-          <h2>Xu hướng nhanh</h2>
+          <h2>Biểu đồ kinh doanh</h2>
         </div>
-        <p>Chỉ giữ biểu đồ tóm tắt, phần phân tích sâu nằm ở trang báo cáo.</p>
+        
       </div>
 
       <div className="charts-row">
         <div className="chart-card">
           <div className="card-header">
             <div>
-              <div className="dashboard-card-kicker">Revenue trend</div>
+              
               <h3>Doanh thu theo thời gian</h3>
               <p className="dashboard-card-description">
                 Theo dõi dòng tiền trong {selectedChartWindow.label} gần nhất để nhận ra ngày bán tốt nhất.
@@ -389,7 +389,7 @@ export default function Dashboard() {
         <div className="chart-card">
           <div className="card-header">
             <div>
-              <div className="dashboard-card-kicker">Order status</div>
+              
               <h3>Đơn hàng theo trạng thái</h3>
               <p className="dashboard-card-description">Kiểm tra ngay xem đội vận hành đang dồn lực ở bước nào.</p>
             </div>
@@ -465,7 +465,7 @@ export default function Dashboard() {
         <div className="data-card">
           <div className="card-header">
             <div>
-              <div className="dashboard-card-kicker">Best sellers</div>
+              
               <h3>Sản phẩm bán chạy</h3>
               <p className="dashboard-card-description">Những SKU đang mang về doanh thu và sức kéo tốt nhất.</p>
             </div>
@@ -496,7 +496,7 @@ export default function Dashboard() {
         <div className="data-card">
           <div className="card-header">
             <div>
-              <div className="dashboard-card-kicker">System info</div>
+              
               <h3>Thông tin hệ thống</h3>
               <p className="dashboard-card-description">Tổng quan về dữ liệu trong hệ thống.</p>
             </div>
@@ -544,7 +544,7 @@ export default function Dashboard() {
         <div className="data-card">
           <div className="card-header">
             <div>
-              <div className="dashboard-card-kicker">Quick actions</div>
+              
               <h3>Thao tác nhanh</h3>
               <p className="dashboard-card-description">Các tác vụ thường dùng trong quản trị.</p>
             </div>
@@ -587,20 +587,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="dashboard-footer-strip">
-        <div className="dashboard-footer-metric">
-          <span>Tổng sản phẩm</span>
-          <strong>{dashboardStats.totalProducts}</strong>
-        </div>
-        <div className="dashboard-footer-metric">
-          <span>Tổng khách hàng</span>
-          <strong>{dashboardStats.totalCustomers}</strong>
-        </div>
-        <div className="dashboard-footer-metric">
-          <span>Đơn hoàn thành</span>
-          <strong>{orderStats.completed}</strong>
-        </div>
-      </div>
+      
     </div>
   );
 }

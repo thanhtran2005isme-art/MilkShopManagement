@@ -42,10 +42,10 @@ const DEFAULT_FORM: CouponFormState = {
 };
 
 const STATUS_LABELS = {
-  active: 'Dang hoạt động',
+  active: 'Đang hoạt động',
   scheduled: 'Sắp áp dụng',
-  exhausted: 'Het luot',
-  expired: 'Het han',
+  exhausted: 'Hết lượt',
+  expired: 'Hết hạn',
   paused: 'Tạm dừng',
 } as const;
 
@@ -235,7 +235,7 @@ export default function AdminCoupons() {
     }
 
     const accepted = await confirm({
-      title: 'Xóa ma giảm giá',
+      title: 'Xóa mã giảm giá',
       message: `Ma ${selectedCoupon.code} sẽ bị gỡ khỏi hệ thống coupon hiện tại.`,
       confirmLabel: 'Xóa coupon',
       tone: 'danger',
@@ -332,8 +332,8 @@ export default function AdminCoupons() {
     <div className="marketing-page">
       <div className="page-header">
         <div>
-          <h1>Ma giảm giá</h1>
-          <p className="marketing-page-subtitle">Theo dõi tiến độ sử dụng, lọc theo trạng thái và tạm dừng nhanh mã coupon khi cần.</p>
+          <h1>Mã giảm giá</h1>
+          <p className="marketing-page-subtitle">Quản lý mã giảm giá và lượt sử dụng.</p>
         </div>
         <div className="page-actions">
           <button className="btn btn-primary" onClick={openCreate}>
@@ -354,7 +354,7 @@ export default function AdminCoupons() {
             <AdminIcon name="fa fa-ticket" />
           </div>
           <div className="stat-content-small">
-            <span className="stat-label-small">Dang hoạt động</span>
+            <span className="stat-label-small">Đang hoạt động</span>
             <h3 className="stat-value-small">{stats.active}</h3>
           </div>
         </div>
@@ -372,7 +372,7 @@ export default function AdminCoupons() {
             <AdminIcon name="fa fa-ban" />
           </div>
           <div className="stat-content-small">
-            <span className="stat-label-small">Het luot</span>
+            <span className="stat-label-small">Hết lượt</span>
             <h3 className="stat-value-small">{stats.exhausted}</h3>
           </div>
         </div>
@@ -381,7 +381,7 @@ export default function AdminCoupons() {
             <AdminIcon name="fa fa-clock" />
           </div>
           <div className="stat-content-small">
-            <span className="stat-label-small">Het han</span>
+            <span className="stat-label-small">Hết hạn</span>
             <h3 className="stat-value-small">{stats.expired}</h3>
           </div>
         </div>
@@ -401,11 +401,11 @@ export default function AdminCoupons() {
             onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
           >
             <option value="all">Tất cả trạng thái</option>
-            <option value="active">Dang hoạt động</option>
+            <option value="active">Đang hoạt động</option>
             <option value="scheduled">Sắp áp dụng</option>
             <option value="paused">Tạm dừng</option>
-            <option value="exhausted">Het luot</option>
-            <option value="expired">Het han</option>
+            <option value="exhausted">Hết lượt</option>
+            <option value="expired">Hết hạn</option>
           </select>
         </div>
 
@@ -496,7 +496,7 @@ export default function AdminCoupons() {
           <div className="modal-dialog marketing-modal" onClick={(event) => event.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h3>{editId ? 'Cập nhật coupon' : 'Thêm ma giảm giá'}</h3>
+                <h3>{editId ? 'Cập nhật coupon' : 'Thêm mã giảm giá'}</h3>
                 <button className="modal-close" onClick={closeForm}>
                   <AdminIcon name="fa fa-times" />
                 </button>

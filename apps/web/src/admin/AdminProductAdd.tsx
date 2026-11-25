@@ -751,7 +751,7 @@ export default function AdminProductAdd() {
     <div className="product-add-page">
       <div className="page-header product-builder-header">
         <div className="product-builder-copy">
-          <span className="product-builder-eyebrow">{isEditMode ? 'Chỉnh sửa sản phẩm' : 'Catalog'}</span>
+          <div className="milkshop-breadcrumb">Sản phẩm / {isEditMode ? 'Chỉnh sửa' : 'Thêm mới'}</div>
           <h1>{form.name.trim() || (isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới')}</h1>
           <p>{isEditMode ? 'Cập nhật thông tin sản phẩm. Mọi thay đổi sẽ được lưu khi bấm nút.' : 'Nhập thông tin cần thiết để tạo sản phẩm. Các phần nâng cao có thể bổ sung sau.'}</p>
         </div>
@@ -763,7 +763,7 @@ export default function AdminProductAdd() {
           </button>
           <button type="button" className="product-builder-btn subtle" onClick={() => handleSave('draft')}>
             <AdminIcon name="fa-folder-open" />
-            <span>Lưu nhập</span>
+            <span>Lưu nháp</span>
           </button>
           <button type="button" className="product-builder-btn primary" onClick={() => handleSave(form.status)}>
             <AdminIcon name="fa-save" />
@@ -802,7 +802,7 @@ export default function AdminProductAdd() {
         {invalidSalePrice && (
           <div className="builder-inline-alert danger">
             <AdminIcon name="fa-circle-exclamation" />
-            <span>Giá sale cần nhỏ hơn giá gốc.</span>
+            <span>Giá giảm cần nhỏ hơn giá gốc.</span>
           </div>
         )}
       </section>
@@ -1439,8 +1439,8 @@ export default function AdminProductAdd() {
 
           <section className="builder-side-card">
             <div className="builder-side-header">
-              <span className="builder-section-kicker">Preview</span>
-              <h3>Card sản phẩm</h3>
+              <span className="builder-section-kicker">Xem trước</span>
+              <h3>Thông tin sản phẩm</h3>
             </div>
 
             <article className="builder-preview-product">

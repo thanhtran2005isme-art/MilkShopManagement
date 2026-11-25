@@ -48,7 +48,7 @@ interface AdminNotificationItem {
 }
 
 const menuItems: MenuItem[] = [
-  { path: '/admin/dashboard', icon: 'fa-chart-line', label: 'Dashboard' },
+  { path: '/admin/dashboard', icon: 'fa-chart-line', label: 'Tổng quan' },
   {
     icon: 'fa-shopping-cart',
     label: 'Đơn hàng',

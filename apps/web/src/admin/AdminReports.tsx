@@ -181,7 +181,7 @@ export default function AdminReports() {
       <section className="reports-hero">
         <div className="reports-hero-top">
           <div className="reports-hero-copy">
-            <span className="reports-overline">Business reporting</span>
+            
             <h1>Báo cáo vận hành</h1>
             <p>{activePeriod.description}</p>
           </div>
@@ -200,7 +200,7 @@ export default function AdminReports() {
 
         <div className="reports-hero-grid">
           <article className="reports-focus-card">
-            <span className="reports-overline">Focus period</span>
+            <span className="reports-overline">Kỳ báo cáo</span>
             <h2>{activePeriod.label}</h2>
             <div className="reports-focus-stats">
               <div><span>Sản phẩm đã bán</span><strong>{snapshot.itemsSold}</strong></div>
@@ -227,28 +227,30 @@ export default function AdminReports() {
         </div>
       </section>
 
-      <section className="reports-glance-grid">
+      <details className="milkshop-extra">
+          <summary>Xem thêm điểm nổi bật</summary>
+          <section className="reports-glance-grid">
         <article className="reports-glance-card">
-          <span className="reports-overline">Top performer</span>
+          <span className="reports-overline">Sản phẩm bán chạy</span>
           <strong>{topProduct?.name || 'Chưa có sản phẩm nổi bật'}</strong>
           <p>{topProduct ? `${topProduct.quantity} sản phẩm | ${formatCurrency(topProduct.revenue)} | ${topProduct.share}% doanh thu nhóm top` : 'Cần thêm dữ liệu bán hàng để xác định sản phẩm dẫn đầu.'}</p>
         </article>
         <article className="reports-glance-card">
-          <span className="reports-overline">Category leader</span>
+          <span className="reports-overline">Danh mục nổi bật</span>
           <strong>{topCategory?.category || 'Chưa có danh mục nổi bật'}</strong>
           <p>{topCategory ? `${topCategory.quantity} sản phẩm | ${formatCurrency(topCategory.revenue)} | ${topCategory.share}% tỷ trọng` : 'Chưa có dữ liệu danh mục trong giai đoạn này.'}</p>
         </article>
         <article className="reports-glance-card">
-          <span className="reports-overline">Order status</span>
+          <span className="reports-overline">Trạng thái đơn hàng</span>
           <strong>{leadStatus?.name || 'Chưa có trạng thái áp đảo'}</strong>
           <p>{leadStatus ? `${leadStatus.value} đơn đang tập trung vào trạng thái này.` : 'Chưa có đơn hàng đủ dữ liệu để phân tích trạng thái.'}</p>
         </article>
       </section>
-
-      <section className="reports-visual-grid">
+        </details>
+        <section className="reports-visual-grid">
         <article className={`reports-panel reports-panel-wide ${!hasRevenueData ? 'is-empty' : ''}`}>
           <div className="reports-panel-head">
-            <div><h3>Doanh thu theo thời gian</h3><p>Quan sát nhịp tăng trưởng theo từng mốc trong kỳ.</p></div>
+            <div><h3>Doanh thu theo thời gian</h3><p>Doanh thu theo ngày trong kỳ.</p></div>
             <span className="reports-chip">{snapshot.itemsSold} sản phẩm đã bán</span>
           </div>
           <div className="reports-chart-box">
@@ -268,7 +270,7 @@ export default function AdminReports() {
 
         <article className={`reports-panel ${!hasStatusData ? 'is-empty' : ''}`}>
           <div className="reports-panel-head">
-            <div><h3>Đơn hàng theo trạng thái</h3><p>Tỷ trọng phân bổ đơn đang đi qua hệ thống.</p></div>
+            <div><h3>Đơn hàng theo trạng thái</h3><p>Số lượng theo trạng thái.</p></div>
             <span className="reports-chip">{snapshot.currentOrders.length} đơn</span>
           </div>
           <div className="reports-chart-box">
@@ -288,7 +290,7 @@ export default function AdminReports() {
 
         <article className={`reports-panel ${!hasTopProducts ? 'is-empty' : ''}`}>
           <div className="reports-panel-head">
-            <div><h3>Top sản phẩm theo doanh thu</h3><p>Những SKU đang kéo doanh thu mạnh nhất.</p></div>
+            <div><h3>Top sản phẩm theo doanh thu</h3><p>Sản phẩm có doanh thu cao.</p></div>
             <Link to="/admin/products" className="reports-inline-link">Xem sản phẩm</Link>
           </div>
           <div className="reports-chart-box">
@@ -330,7 +332,7 @@ export default function AdminReports() {
       <section className="reports-table-grid">
         <article className="reports-table-panel">
           <div className="reports-panel-head">
-            <div><h3>Top sản phẩm bán chạy</h3><p>Danh sách chi tiết để bám sát nhóm SKU đang kéo doanh thu.</p></div>
+            <div><h3>Top sản phẩm bán chạy</h3><p>Chi tiết số lượng và doanh thu.</p></div>
             <Link to="/admin/products" className="reports-inline-link">Xem tất cả</Link>
           </div>
           <div className="table-responsive">

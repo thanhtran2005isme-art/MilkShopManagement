@@ -361,10 +361,10 @@ export default function AdminCustomers() {
                 <button type="button" className="customers-ghost-btn" onClick={() => void fetchCustomers()}>Thử tải lại</button>
               </div>
             ) : null}
-            <span className="customers-overline">Quản lý khách hàng</span>
+            
             <h1>Khách hàng</h1>
             <p>
-              Quản lý tệp khách, lọc phân khúc và mở nhanh hồ sơ chăm sóc trên cùng một màn hình.
+              Tra cứu và quản lý hồ sơ khách hàng.
             </p>
           </section>
 
@@ -417,7 +417,7 @@ export default function AdminCustomers() {
           <section className="customers-side-panel customers-filter-panel">
             <div className="customers-side-head">
               <span className="customers-overline">Bộ lọc</span>
-              <strong>Lọc & tìm nhanh</strong>
+              <strong>Tìm kiếm và lọc</strong>
             </div>
 
             <label className="customers-field">
@@ -458,7 +458,7 @@ export default function AdminCustomers() {
             </div>
           </section>
 
-          <section className="customers-side-panel customers-care-panel">
+          <details className="customers-side-panel customers-care-panel milkshop-extra"><summary>Thống kê chăm sóc khách hàng</summary>
             <div className="customers-side-head">
               <span className="customers-overline">Nhịp chăm sóc</span>
               <strong>Nhịp chăm sóc</strong>
@@ -480,7 +480,7 @@ export default function AdminCustomers() {
               <AdminIcon name="fa-circle-info" />
               <span>{stats.noPhone} khách chưa có số điện thoại để chăm sóc trực tiếp.</span>
             </div>
-          </section>
+          </details>
         </aside>
 
         <section className="customers-roster-stage">
@@ -488,7 +488,7 @@ export default function AdminCustomers() {
             <div>
               <span className="customers-overline">Danh sách</span>
               <h2>Danh sách khách hàng</h2>
-              <p>Chọn một hồ sơ để mở panel chăm sóc chi tiết ở bên phải.</p>
+              <p>Chọn khách hàng để xem hồ sơ và lịch sử mua.</p>
             </div>
             <div className="customers-stage-badges">
               <span>{filteredCustomers.length} kết quả</span>

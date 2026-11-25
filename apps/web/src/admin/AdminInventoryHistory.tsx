@@ -336,12 +336,12 @@ export default function AdminInventoryHistory() {
     <div className="inventory-shell inventory-history-page">
       <section className="inventory-history-hero">
         <div className="inventory-history-hero-copy">
-          <span className="inventory-history-overline">Stock movement journal</span>
+          
           <h1>{filterByProductId ? `Lịch sử kho của ${filteredProductName || 'sản phẩm #' + filterByProductId}` : 'Lịch sử xuất nhập kho'}</h1>
           <p>
             {filterByProductId
               ? `Đang xem riêng các giao dịch nhập/xuất/đặt lại tồn của sản phẩm này.`
-              : 'Tập trung mọi chuyển động tồn kho vào một màn hình dễ quét: lọc nhanh theo loại phiếu, truy vết theo ngày và xem ngay biến động cũ → mới của từng thao tác.'}
+              : 'Tra cứu giao dịch nhập, xuất và điều chỉnh tồn kho.'}
           </p>
           {filterByProductId && (
             <button
@@ -420,7 +420,7 @@ export default function AdminInventoryHistory() {
           <div className="inventory-history-panel-head">
             <div>
               <span className="inventory-history-overline">Bộ lọc truy vết</span>
-              <h2>Tìm đúng giao dịch cần xem</h2>
+              <h2>Bộ lọc giao dịch</h2>
             </div>
             <button type="button" className="inventory-history-btn is-ghost is-small" onClick={resetFilters}>
               <AdminIcon name="fa-rotate-left" />
@@ -467,7 +467,7 @@ export default function AdminInventoryHistory() {
           <div className="inventory-history-panel-head">
             <div>
               <span className="inventory-history-overline">Điểm nổi bật</span>
-              <h2>Nhìn nhanh toàn cảnh</h2>
+              <h2>Thống kê giao dịch</h2>
             </div>
           </div>
 
@@ -506,7 +506,7 @@ export default function AdminInventoryHistory() {
         <aside className="inventory-history-sidebar">
           <div className="inventory-history-side-card">
             <span className="inventory-history-overline">Mốc ngày</span>
-            <h2>Nhảy nhanh theo timeline</h2>
+            <h2>Theo ngày</h2>
             <div className="inventory-history-day-links">
               {groupedHistory.length > 0 ? (
                 groupedHistory.map((group) => (
@@ -529,7 +529,7 @@ export default function AdminInventoryHistory() {
 
           <div className="inventory-history-side-card">
             <span className="inventory-history-overline">Tín hiệu nhanh</span>
-            <h2>Truy vết trong phạm vi hiện tại</h2>
+            <h2>Danh sách giao dịch</h2>
             <div className="inventory-history-side-stats">
               <div>
                 <span>Ngày có dữ liệu</span>

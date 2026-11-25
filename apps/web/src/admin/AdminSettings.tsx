@@ -713,20 +713,20 @@ export default function AdminSettings() {
       <div className="settings-studio-shell">
         <aside className="settings-studio-rail">
           <div className="settings-brand-block">
-            <span className="settings-overline">Settings atelier</span>
-            <h1>Admin Settings</h1>
-            <p>Trạm cấu hình trung tâm cho checkout, email, vận hành và bảo mật với một bố cục mới hoàn toàn.</p>
+            
+            <h1>Cài đặt</h1>
+            <p>Thông tin cửa hàng và cấu hình hệ thống.</p>
           </div>
 
           <div className="settings-rail-progress">
             <div>
-              <span className="settings-overline">Health score</span>
+              <span className="settings-overline">Mức hoàn thiện</span>
               <strong>{profileCompleteness}%</strong>
               <p>Mức sẵn sàng tổng quát của toàn bộ cấu hình.</p>
             </div>
             <div className="settings-rail-badges">
-              <span>{enabledPaymentMethods} payment live</span>
-              <span>{enabledNotificationCount} alerts on</span>
+              <span>{enabledPaymentMethods} phương thức</span>
+              <span>{enabledNotificationCount} thông báo</span>
             </div>
           </div>
 
@@ -742,7 +742,7 @@ export default function AdminSettings() {
                   <AdminIcon name={tab.icon} />
                 </div>
                 <div className="settings-rail-tab-copy">
-                  <span>{tab.eyebrow}</span>
+                  
                   <strong>{tab.label}</strong>
                   <small>{tab.hint}</small>
                 </div>
@@ -761,7 +761,7 @@ export default function AdminSettings() {
         <main className="settings-studio-stage">
           <section className="settings-command-deck">
             <div className="settings-command-copy">
-              <span className="settings-overline">{activeTabMeta.eyebrow}</span>
+              
               <h2>{activeTabMeta.label}</h2>
               <p>{activeTabMeta.hint}</p>
             </div>
@@ -823,7 +823,7 @@ export default function AdminSettings() {
                 <div className="settings-form-actions"><button type="button" className="settings-primary-btn" onClick={() => handleSaveSection('general', 'thông tin cửa hàng')}><AdminIcon name="fa-save" /><span>Lưu thông tin</span></button></div>
               </section>
               <aside className="settings-insight-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Live impact</span><h3>Nơi dữ liệu đang được dùng</h3></div></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Áp dụng</span><h3>Nơi dữ liệu đang được dùng</h3></div></div>
                 <div className="settings-note-list">
                   <article className="settings-note-item"><div className="settings-note-icon"><AdminIcon name="fa-shopping-bag" /></div><div><strong>Checkout support box</strong><p>Hiển thị {settings.storeName || 'Tên cửa hàng'}, {settings.storePhone || 'Số điện thoại'} và {settings.storeEmail || 'Email liên hệ'}.</p></div></article>
                   <article className="settings-note-item"><div className="settings-note-icon"><AdminIcon name="fa-envelope" /></div><div><strong>Subject email</strong><p>Tên cửa hàng được đưa vào email test và các bản ghi email tự động.</p></div></article>
@@ -836,7 +836,7 @@ export default function AdminSettings() {
           {activeTab === 'payment' && (
             <div className="settings-workspace-grid">
               <section className="settings-editor-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Checkout finance</span><h3>Cấu hình phương thức thanh toán</h3></div><p>Checkout chỉ hiển thị những phương thức đang bật ở đây.</p></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Thanh toán</span><h3>Cấu hình phương thức thanh toán</h3></div><p>Checkout chỉ hiển thị những phương thức đang bật ở đây.</p></div>
                 <article className="settings-toggle-card">
                   <div className="settings-toggle-head"><div><h4>COD</h4><p>Thanh toán khi nhận hàng, có thể cộng phụ phí theo phần trăm tổng đơn.</p></div><label className="settings-switch"><input type="checkbox" checked={settings.codEnabled} onChange={(event) => updateField('codEnabled', event.target.checked)} /><span className="settings-switch-track"></span></label></div>
                   {settings.codEnabled && <label className="settings-field"><span>Phụ phí COD (%)</span><input type="number" min="0" max="100" step="0.5" value={settings.codFee} onChange={(event) => updateField('codFee', Number(event.target.value))} /><small>Phí này sẽ được cộng thêm khi khách chọn COD.</small></label>}
@@ -1053,7 +1053,7 @@ export default function AdminSettings() {
                 </div>
               </section>
               <aside className="settings-insight-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Checkout preview</span><h3>Tình trạng hiển thị ở checkout</h3></div></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Xem trước</span><h3>Tình trạng hiển thị ở checkout</h3></div></div>
                 <div className="settings-preview-stack">
                   <div className="settings-preview-row"><span>Phương thức đang mở</span><strong>{enabledPaymentMethods > 0 ? `${enabledPaymentMethods} phương thức` : 'Chưa có'}</strong></div>
                   <div className="settings-preview-row"><span>Phụ phí COD</span><strong>{settings.codEnabled ? `${settings.codFee}%` : 'Đang tắt'}</strong></div>
@@ -1066,7 +1066,7 @@ export default function AdminSettings() {
           {activeTab === 'email' && (
             <div className="settings-workspace-grid">
               <section className="settings-editor-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Messaging hub</span><h3>SMTP & email tự động</h3></div><p>Hệ thống sẽ kiểm tra dữ liệu SMTP, lưu kết quả test và ghi lại lịch sử email.</p></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Email</span><h3>SMTP & email tự động</h3></div><p>Hệ thống sẽ kiểm tra dữ liệu SMTP, lưu kết quả test và ghi lại lịch sử email.</p></div>
                 <div className="settings-form-grid">
                   <label className="settings-field"><span>SMTP Host</span><input type="text" value={settings.smtpHost} onChange={(event) => updateField('smtpHost', event.target.value)} /></label>
                   <label className="settings-field"><span>SMTP Port</span><input type="number" value={settings.smtpPort} onChange={(event) => updateField('smtpPort', Number(event.target.value))} /></label>
@@ -1082,7 +1082,7 @@ export default function AdminSettings() {
                 <div className="settings-form-actions"><button type="button" className="settings-secondary-btn" onClick={handleTestEmail}><AdminIcon name="fa-paper-plane" /><span>Chạy email test</span></button><button type="button" className="settings-primary-btn" onClick={() => handleSaveSection('email', 'email')}><AdminIcon name="fa-save" /><span>Lưu email</span></button></div>
               </section>
               <aside className="settings-insight-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Mail timeline</span><h3>Lịch sử gửi & kiểm tra email</h3></div></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Nhật ký email</span><h3>Lịch sử gửi & kiểm tra email</h3></div></div>
                 {renderActivityList(emailActivities, 'fa-inbox', 'Chưa có log email nào được ghi nhận.', 'email')}
               </aside>
             </div>
@@ -1091,7 +1091,7 @@ export default function AdminSettings() {
           {activeTab === 'notifications' && (
             <div className="settings-workspace-grid">
               <section className="settings-editor-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Ops alerts</span><h3>Điều phối tín hiệu dashboard</h3></div><p>Mỗi toggle quyết định card cảnh báo nào được hiển thị trên dashboard quản trị.</p></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Thông báo</span><h3>Điều phối tín hiệu dashboard</h3></div><p>Mỗi toggle quyết định card cảnh báo nào được hiển thị trên dashboard quản trị.</p></div>
                 <div className="settings-switch-stack">
                   <label className="settings-switch-card"><div><strong>Đơn chờ xác nhận</strong><p>Hiển thị cảnh báo khi có đơn mới cần xử lý.</p></div><input type="checkbox" checked={settings.notifyNewOrder} onChange={(event) => updateField('notifyNewOrder', event.target.checked)} /></label>
                   <label className="settings-switch-card"><div><strong>Đơn bị hủy</strong><p>Giúp đội vận hành bắt được các đơn có vấn đề hoặc hoàn hủy.</p></div><input type="checkbox" checked={settings.notifyCancelOrder} onChange={(event) => updateField('notifyCancelOrder', event.target.checked)} /></label>
@@ -1102,7 +1102,7 @@ export default function AdminSettings() {
                 <div className="settings-form-actions"><button type="button" className="settings-primary-btn" onClick={() => handleSaveSection('notifications', 'thông báo')}><AdminIcon name="fa-save" /><span>Lưu thông báo</span></button></div>
               </section>
               <aside className="settings-insight-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Signal density</span><h3>Tổng quan độ dày cảnh báo</h3></div></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Tổng quan cảnh báo</span><h3>Tổng quan độ dày cảnh báo</h3></div></div>
                 <div className="settings-preview-stack">
                   <div className="settings-preview-row"><span>Tổng tín hiệu đang bật</span><strong>{enabledNotificationCount}/6</strong></div>
                   <div className="settings-preview-row"><span>Đơn hàng</span><strong>{settings.notifyNewOrder || settings.notifyCancelOrder ? 'Đang theo dõi' : 'Đang tắt'}</strong></div>
@@ -1116,7 +1116,7 @@ export default function AdminSettings() {
           {activeTab === 'security' && (
             <div className="settings-workspace-grid">
               <section className="settings-editor-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Access control</span><h3>Bảo mật tài khoản quản trị</h3></div><p>Đổi mật khẩu thật, lưu vết hành động và chuẩn bị chính sách cho lớp 2FA.</p></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Bảo mật</span><h3>Bảo mật tài khoản quản trị</h3></div><p>Đổi mật khẩu thật, lưu vết hành động và chuẩn bị chính sách cho lớp 2FA.</p></div>
                 <div className="settings-form-grid">
                   <label className="settings-field settings-span-2"><span>Mật khẩu hiện tại</span><input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((currentForm) => ({ ...currentForm, currentPassword: event.target.value }))} /></label>
                   <label className="settings-field"><span>Mật khẩu mới</span><input type="password" value={passwordForm.nextPassword} onChange={(event) => setPasswordForm((currentForm) => ({ ...currentForm, nextPassword: event.target.value }))} /></label>
@@ -1129,7 +1129,7 @@ export default function AdminSettings() {
                 <div className="settings-form-actions"><button type="button" className="settings-secondary-btn" onClick={handleChangePassword}><AdminIcon name="fa-key" /><span>Đổi mật khẩu</span></button><button type="button" className="settings-primary-btn" onClick={() => handleSaveSection('security', 'bảo mật')}><AdminIcon name="fa-save" /><span>Lưu bảo mật</span></button></div>
               </section>
               <aside className="settings-insight-panel">
-                <div className="settings-panel-head"><div><span className="settings-overline">Audit trail</span><h3>Lịch sử truy cập & thay đổi</h3></div></div>
+                <div className="settings-panel-head"><div><span className="settings-overline">Nhật ký</span><h3>Lịch sử truy cập & thay đổi</h3></div></div>
                 {renderActivityList(securityActivities, 'fa-shield-alt', 'Chưa có dữ liệu bảo mật nào được ghi nhận.', 'security')}
               </aside>
             </div>
@@ -1139,7 +1139,7 @@ export default function AdminSettings() {
             <div className="settings-workspace-grid">
               <section className="settings-editor-panel">
                 <div className="settings-panel-head">
-                  <div><span className="settings-overline">AI assistant</span><h3>Cấu hình Chatbot AI</h3></div>
+                  <div><span className="settings-overline">Trợ lý AI</span><h3>Cấu hình Chatbot AI</h3></div>
                   <p>Bật LLM để trợ lý hiểu câu hỏi tự nhiên và tư vấn (RAG truy dữ liệu shop). Tắt thì bot chạy chế độ rule-based truy DB như mặc định. Lưu là có hiệu lực ngay, không cần khởi động lại.</p>
                 </div>
 

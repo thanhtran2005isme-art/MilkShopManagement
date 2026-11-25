@@ -609,12 +609,9 @@ export default function AdminAttributes() {
         <>
           <section className="attribute-workshop-hero">
             <div className="attribute-hero-copy">
-              <span className="attribute-hero-eyebrow">Attribute workshop</span>
-              <h1>Thuộc tính và preset vận hành catalog</h1>
-              <p>
-                Tổ chức các thuộc tính theo hướng dễ dùng hơn cho team vận hành: nhìn nhanh loại nào đang phủ nhiều sản
-            phẩm, loại nào còn trống và preset nào nên chuẩn hóa để đồng bộ size, màu, chất liệu và form dáng.
-          </p>
+              
+              <h1>Thuộc tính sản phẩm</h1>
+              <p>Quản lý thuộc tính và các giá trị dùng chung cho sản phẩm.</p>
 
           <div className="attribute-hero-actions">
             <button type="button" className="attribute-btn primary" onClick={openAdd}>
@@ -632,14 +629,16 @@ export default function AdminAttributes() {
               }}
             >
               <AdminIcon name="fa-rotate-left" />
-              <span>Làm mới view</span>
+              <span>Đặt lại bộ lọc</span>
             </button>
           </div>
         </div>
 
-        <div className="attribute-hero-panels">
+        <details className="milkshop-extra">
+          <summary>Xem thêm thống kê thuộc tính</summary>
+          <div className="attribute-hero-panels">
           <article className="attribute-hero-card spotlight">
-            <span className="attribute-card-kicker">Spotlight</span>
+            <span className="attribute-card-kicker">Thuộc tính nổi bật</span>
             <strong>{spotlightAttribute?.name || 'Chưa có thuộc tính nổi bật'}</strong>
             <p>
               {spotlightAttribute
@@ -649,7 +648,7 @@ export default function AdminAttributes() {
           </article>
 
           <article className="attribute-hero-card coverage">
-            <span className="attribute-card-kicker">Coverage</span>
+            <span className="attribute-card-kicker">Mức độ sử dụng</span>
             <strong>{catalogCoverage}% catalog đã chạm thuộc tính</strong>
             <p>
               {unusedAttributes > 0
@@ -658,7 +657,8 @@ export default function AdminAttributes() {
             </p>
           </article>
         </div>
-      </section>
+        </details>
+        </section>
 
       <section className="attribute-metrics-grid">
         <article className="attribute-metric-card">
@@ -905,7 +905,7 @@ export default function AdminAttributes() {
         <aside className="attribute-side-panel">
           <section className="attribute-insight-card">
             <div className="attribute-insight-head">
-              <span className="attribute-card-kicker">System note</span>
+              <span className="attribute-card-kicker">Ghi chú</span>
               <h3>Logic đang áp dụng</h3>
             </div>
             <div className="attribute-health-list">
@@ -926,7 +926,7 @@ export default function AdminAttributes() {
 
           <section className="attribute-insight-card">
             <div className="attribute-insight-head">
-              <span className="attribute-card-kicker">Type mix</span>
+              <span className="attribute-card-kicker">Phân loại</span>
               <h3>Phân bổ thuộc tính</h3>
             </div>
             <div className="attribute-type-breakdown">
@@ -951,8 +951,8 @@ export default function AdminAttributes() {
 
           <section className="attribute-insight-card">
             <div className="attribute-insight-head">
-              <span className="attribute-card-kicker">Top linked</span>
-              <h3>Thuộc tính khỏe nhất</h3>
+              <span className="attribute-card-kicker">Sử dụng nhiều</span>
+              <h3>Thuộc tính dùng nhiều nhất</h3>
             </div>
             <div className="attribute-priority-list">
               {topAttributes.length > 0 ? (
@@ -980,7 +980,7 @@ export default function AdminAttributes() {
           <div className="attribute-modal" onClick={(event) => event.stopPropagation()}>
             <div className="attribute-modal-header">
               <div>
-                <span className="attribute-card-kicker">{editId ? 'Update attribute' : 'Create attribute'}</span>
+                <span className="attribute-card-kicker">{editId ? 'Cập nhật thuộc tính' : 'Thêm thuộc tính'}</span>
                 <h3>{editId ? 'Chỉnh sửa thuộc tính' : 'Thêm thuộc tính mới'}</h3>
               </div>
               <button type="button" className="attribute-modal-close" onClick={closeModal}>
@@ -1135,7 +1135,7 @@ export default function AdminAttributes() {
                   </div>
 
                   <div className="attribute-preview-copy">
-                    <span className="attribute-card-kicker">Live preview</span>
+                    <span className="attribute-card-kicker">Xem trước</span>
                     <h4>{form.name.trim() || 'Tên thuộc tính sẽ hiện ở đây'}</h4>
                     <p>{selectedTypeMeta.heroNote}</p>
                   </div>
