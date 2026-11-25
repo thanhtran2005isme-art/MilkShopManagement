@@ -6,10 +6,7 @@ import {
 } from "@nestjs/common";
 import { toBoolean, toNumber } from "../../common/db-value.js";
 import { PrismaService } from "../../database/prisma.service.js";
-import {
-  hashPassword,
-  verifyPassword,
-} from "./password.js";
+import { verifyBcryptOnly } from "./password.js";
 import { TokenService } from "./token.service.js";
 import type { LoginRequestMeta } from "./user-agent.js";
 
@@ -109,24 +106,7 @@ export class StaffAuthService {
         };
       }
 
-      let valid = false;
-      let rehash = false;
-      if (
-        staff.passwordHash.startsWith(
-          "$2a$11$rPlaceholderHash",
-        )
-      ) {
-        valid = password === "Admin@123";
-        rehash = valid;
-      } else {
-        const result = await verifyPassword(
-          password,
-          staff.passwordHash,
-          true,
-        );
-        valid = result.valid;
-        rehash = result.needsRehash;
-      }
+      const valid = await verifyBcryptOnly(password, staff.passwordHash);
 
       if (!valid) {
         const attempts = toNumber(staff.failedAttempts) + 1;
@@ -153,9 +133,6 @@ export class StaffAuthService {
         };
       }
 
-      if (rehash) {
-        staff.passwordHash = await hashPassword(password);
-      }
       const now = new Date();
       await tx.$executeRawUnsafe(
         `UPDATE NhanVien

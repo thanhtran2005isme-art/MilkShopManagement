@@ -1,5 +1,6 @@
 import {
   Body,
+  BadRequestException,
   Controller,
   Delete,
   Get,
@@ -20,6 +21,7 @@ import { assertStaffPermission } from "../identity/staff-permissions.js";
 import { AdminStaffGuard } from "./admin-staff.guard.js";
 import {
   bool,
+  bodyValue,
   date,
   deleteRow,
   insertRow,
@@ -206,14 +208,36 @@ export class AdminProductsController {
   constructor(private readonly prisma: PrismaService) {}
 
   private values(body: JsonRecord, creating = false): Record<string, unknown> {
+    const name = text(body, "TenSanPham").trim();
+    const sku = text(body, "MaSanPham").trim();
+    const price = bodyValue(body, "Gia");
+    const stock = bodyValue(body, "TonKho");
+    if (!name || !sku || price === undefined || price === null || price === "" || !Number.isFinite(Number(price)) || Number(price) < 0 ||
+        (stock !== undefined && (stock === null || !Number.isSafeInteger(Number(stock)) || Number(stock) < 0))) {
+      throw new BadRequestException("Tên, mã sản phẩm, giá và tồn kho không hợp lệ.");
+    }
+    const milkFields: Record<string, unknown> = {};
+    for (const key of ["ThuongHieu", "HuongVi", "DonViTinh"]) {
+      if (bodyValue(body, key) !== undefined) {
+        const value = nullableText(body, key)?.trim() || null;
+        if (key === "DonViTinh" && !value) throw new BadRequestException("Đơn vị tính không được bỏ trống.");
+        milkFields[key] = value;
+      }
+    }
+    const volume = bodyValue(body, "DungTichMl");
+    if (volume !== undefined) {
+      if (volume !== null && (!Number.isSafeInteger(Number(volume)) || Number(volume) <= 0)) throw new BadRequestException("Dung tích phải là số nguyên dương.");
+      milkFields.DungTichMl = volume === null ? null : Number(volume);
+    }
     return {
-      TenSanPham: text(body, "TenSanPham"),
+      ...milkFields,
+      TenSanPham: name,
       DanhMucId: nullableNum(body, "DanhMucId"),
       DanhMuc: text(body, "DanhMuc"),
       DanhMucPhu: nullableText(body, "DanhMucPhu"),
       PhongCach: nullableText(body, "PhongCach"),
       ...(creating ? { NhomTuoi: nullableText(body, "NhomTuoi") } : {}),
-      GioiTinh: text(body, "GioiTinh"),
+      GioiTinh: text(body, "GioiTinh", "Unisex"),
       Gia: num(body, "Gia"),
       GiaCu: nullableNum(body, "GiaCu"),
       TonKho: num(body, "TonKho"),
@@ -222,7 +246,7 @@ export class AdminProductsController {
       DanhSachAnh: nullableText(body, "DanhSachAnh"),
       MoTaNgan: nullableText(body, "MoTaNgan"),
       MoTaChiTiet: text(body, "MoTaChiTiet"),
-      MaSanPham: text(body, "MaSanPham"),
+      MaSanPham: sku,
       Slug: nullableText(body, "Slug"),
       ...(creating ? { Menu: nullableText(body, "Menu") } : {}),
       BoSuuTapId: nullableNum(body, "BoSuuTapId"),
@@ -242,12 +266,14 @@ export class AdminProductsController {
 
   @Get()
   async all(
+    @CurrentUser() user: AuthenticatedUser,
     @Query("search") search?: string,
     @Query("category") category?: string,
     @Query("status") status?: string,
     @Query("page") rawPage?: string,
     @Query("pageSize") rawPageSize?: string,
   ) {
+    assertStaffPermission(user, "products.view");
     const { page, pageSize, offset } = pageValues(rawPage, rawPageSize);
     const clauses: string[] = [];
     const params: unknown[] = [];
@@ -261,10 +287,11 @@ export class AdminProductsController {
   }
 
   @Get(":id")
-  one(@Param("id") rawId: string) { return selectById(this.prisma, "SanPham", intPath(rawId)); }
+  one(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string) { assertStaffPermission(user, "products.view"); return selectById(this.prisma, "SanPham", intPath(rawId)); }
 
   @Post()
-  async create(@Body() body: JsonRecord) {
+  async create(@CurrentUser() user: AuthenticatedUser, @Body() body: JsonRecord) {
+    assertStaffPermission(user, "products.create");
     return this.prisma.$transaction(async (tx) => {
       const id = await insertRow(tx, "SanPham", this.values(body, true));
       return selectById(tx, "SanPham", id);
@@ -272,13 +299,14 @@ export class AdminProductsController {
   }
 
   @Put(":id")
-  update(@Param("id") rawId: string, @Body() body: JsonRecord) {
+  update(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string, @Body() body: JsonRecord) {
+    assertStaffPermission(user, "products.update");
     return updateRow(this.prisma, "SanPham", intPath(rawId), this.values(body));
   }
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param("id") rawId: string) { await deleteRow(this.prisma, "SanPham", intPath(rawId)); }
+  async remove(@CurrentUser() user: AuthenticatedUser, @Param("id") rawId: string) { assertStaffPermission(user, "products.delete"); await deleteRow(this.prisma, "SanPham", intPath(rawId)); }
 }
 
 @Controller("api/admin/reports")

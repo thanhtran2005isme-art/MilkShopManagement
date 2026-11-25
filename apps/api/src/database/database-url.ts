@@ -20,7 +20,7 @@ export function parseMariaDbUrl(rawUrl: string | undefined): MariaDbConnectionOp
   }
 
   const database = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
-  if (!database) throw new Error("DATABASE_URL thiếu tên database.");
+  if (database !== "milkshop") throw new Error("MilkShopManagement chỉ được kết nối database milkshop. Không dùng database dự án gốc.");
 
   return {
     host: url.hostname,

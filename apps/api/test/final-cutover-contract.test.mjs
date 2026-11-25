@@ -39,7 +39,7 @@ test("Node là backend owner duy nhất sau retirement", () => {
 
 test("C# source đã retire nhưng database assets được giữ", () => {
   assert.equal(existsSync(new URL("backend/", repoRoot)), false);
-  assert.equal(existsSync(new URL("database/KaitoKid_MariaDB.sql", repoRoot)), true);
+  assert.equal(existsSync(new URL("database/MilkShop_MariaDB.sql", repoRoot)), true);
   assert.equal(existsSync(new URL("database/migrations/20260930_registration_email_verification.sql", repoRoot)), true);
 });
 

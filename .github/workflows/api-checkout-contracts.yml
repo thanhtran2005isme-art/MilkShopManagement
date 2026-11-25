@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - "apps/api/**"
+      - "database/**"
       - ".github/workflows/api-checkout-contracts.yml"
   push:
     branches:
-      - "feat/admin-lalamove-carrier"
+      - main
     paths:
       - "apps/api/**"
+      - "database/**"
       - ".github/workflows/api-checkout-contracts.yml"
 
 jobs:
@@ -17,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      DATABASE_URL: mysql://kaitokid:ci@127.0.0.1:3306/kaitokid
+      DATABASE_URL: mysql://milkshop:ci@127.0.0.1:3306/milkshop
       NODE_ENV: test
     defaults:
       run:

@@ -19,7 +19,7 @@ Write-Host "[WAIT] Cho Node API san sang tai $healthUrl ..."
 while ((Get-Date) -lt $deadline) {
     try {
         $response = Invoke-WebRequest -UseBasicParsing -Uri $healthUrl -Method Get -TimeoutSec 3
-        if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300) {
+        if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300 -and (($response.Content | ConvertFrom-Json).status -eq "ok") -and (($response.Content | ConvertFrom-Json).service -eq "MilkShopManagement API")) {
             Write-Host "[READY] Node API da san sang: HTTP $($response.StatusCode) $healthUrl" -ForegroundColor Green
             exit 0
         }

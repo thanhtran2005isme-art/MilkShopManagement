@@ -1,5 +1,5 @@
 {
-  "name": "@kaitokid/api",
+  "name": "@milkshop/api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -28,7 +28,9 @@
     "smoke:lalamove-sandbox": "npm run build && node dist/scripts/lalamove-sandbox-smoke.js",
     "test:protected-runtime": "npm run build && node --test test/protected-runtime-parity.test.mjs test/auth-runtime-parity.test.mjs",
     "test:concurrency-runtime": "npm run build && node test/run-concurrency-runtime-race.mjs",
-    "test:realtime-runtime": "npm run build && node --test test/realtime-runtime-race.test.mjs"
+    "test:realtime-runtime": "npm run build && node --test test/realtime-runtime-race.test.mjs",
+    "db:seed-admin": "npm run build && node dist/scripts/seed-milkshop-admin.js",
+    "test:milkshop-runtime": "node --test test/milkshop-runtime.test.mjs"
   },
   "dependencies": {
     "@nestjs/common": "11.2.5",
