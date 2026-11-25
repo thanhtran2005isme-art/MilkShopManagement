@@ -94,13 +94,13 @@ export default function AdminLogin() {
                 border: '1px solid #e2e8f0',
                 borderRadius: 8,
                 fontSize: 14,
-                outline: 'none',
+                outlineOffset: 2,
               }}
             />
           </div>
 
           <div style={{ marginBottom: 24 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+            <label htmlFor="staff-password" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
               Mật khẩu
             </label>
             <input
@@ -114,7 +114,7 @@ export default function AdminLogin() {
                 border: '1px solid #e2e8f0',
                 borderRadius: 8,
                 fontSize: 14,
-                outline: 'none',
+                outlineOffset: 2,
               }}
             />
           </div>

@@ -7,7 +7,6 @@ import { adminProductsApi } from '../services/api';
 import type { Product } from '../types';
 import { formatCurrency } from '../utils/format';
 import {
-  matchesProductCategory,
   toCanonicalCategory,
   toCanonicalGender,
 } from '../utils/productTaxonomy';
@@ -233,7 +232,7 @@ export default function AdminProducts() {
     new Set([
       ...CATEGORY_OPTIONS,
       ...products
-        .map((product) => toCanonicalCategory(product.category) || product.category)
+        .map((product) => product.category)
         .filter(Boolean),
     ])
   );
@@ -255,7 +254,7 @@ export default function AdminProducts() {
       product.description?.toLowerCase().includes(normalizedSearch);
     const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
     const matchesCategory =
-      categoryFilter === 'all' || matchesProductCategory(product.category, categoryFilter);
+      categoryFilter === 'all' || product.category === categoryFilter;
 
     return (
       matchesSearch &&
@@ -432,63 +431,63 @@ export default function AdminProducts() {
           </div>
           <div className="products-overview-copy">
             <span>Tất cả</span>
-            <strong>{products.length}</strong>
+            <strong>{loading || loadError ? '—' : products.length}</strong>
           </div>
         </button>
 
         <button
           type="button"
-          className={`products-overview-card active ${statusFilter === 'active' ? 'active' : ''}`}
-          onClick={() => setStatusFilter(statusFilter === 'active' ? 'all' : 'active')}
+          className={`products-overview-card selling ${statusFilter === 'active' && highlightFilter === 'all' ? 'active' : ''}`}
+          onClick={() => { setStatusFilter(statusFilter === 'active' ? 'all' : 'active'); setHighlightFilter('all'); }}
         >
           <div className="products-overview-icon active">
             <AdminIcon name="fa-check-circle" />
           </div>
           <div className="products-overview-copy">
             <span>Đang bán</span>
-            <strong>{activeCount}</strong>
+            <strong>{loading || loadError ? '—' : activeCount}</strong>
           </div>
         </button>
 
         <button
           type="button"
-          className={`products-overview-card draft ${statusFilter === 'draft' ? 'active' : ''}`}
-          onClick={() => setStatusFilter(statusFilter === 'draft' ? 'all' : 'draft')}
+          className={`products-overview-card draft ${statusFilter === 'draft' && highlightFilter === 'all' ? 'active' : ''}`}
+          onClick={() => { setStatusFilter(statusFilter === 'draft' ? 'all' : 'draft'); setHighlightFilter('all'); }}
         >
           <div className="products-overview-icon draft">
             <AdminIcon name="fa-folder-open" />
           </div>
           <div className="products-overview-copy">
             <span>Nháp</span>
-            <strong>{draftCount}</strong>
+            <strong>{loading || loadError ? '—' : draftCount}</strong>
           </div>
         </button>
 
         <button
           type="button"
-          className={`products-overview-card out-of-stock ${statusFilter === 'out-of-stock' ? 'active' : ''}`}
-          onClick={() => setStatusFilter(statusFilter === 'out-of-stock' ? 'all' : 'out-of-stock')}
+          className={`products-overview-card out-of-stock ${statusFilter === 'out-of-stock' && highlightFilter === 'all' ? 'active' : ''}`}
+          onClick={() => { setStatusFilter(statusFilter === 'out-of-stock' ? 'all' : 'out-of-stock'); setHighlightFilter('all'); }}
         >
           <div className="products-overview-icon out-of-stock">
             <AdminIcon name="fa-box-open" />
           </div>
           <div className="products-overview-copy">
             <span>Hết hàng</span>
-            <strong>{outOfStockCount}</strong>
+            <strong>{loading || loadError ? '—' : outOfStockCount}</strong>
           </div>
         </button>
 
         <button
           type="button"
           className={`products-overview-card low-stock ${highlightFilter === 'low-stock' ? 'active' : ''}`}
-          onClick={() => setHighlightFilter(highlightFilter === 'low-stock' ? 'all' : 'low-stock')}
+          onClick={() => { setStatusFilter('all'); setHighlightFilter(highlightFilter === 'low-stock' ? 'all' : 'low-stock'); }}
         >
           <div className="products-overview-icon low-stock">
             <AdminIcon name="fa-layer-group" />
           </div>
           <div className="products-overview-copy">
             <span>Tồn kho thấp</span>
-            <strong>{lowStockCount}</strong>
+            <strong>{loading || loadError ? '—' : lowStockCount}</strong>
           </div>
         </button>
       </div>
@@ -613,8 +612,8 @@ export default function AdminProducts() {
       <section className="products-list-shell">
         <div className="products-list-toolbar">
           <div className="products-list-copy">
-            <h2>Danh sách sản phẩm <span className="milkshop-count">{sortedProducts.length}</span></h2>
-            <p>Tồn kho: {totalStockUnits} đơn vị · Giá trị theo giá bán: {formatCurrency(totalInventoryValue)}</p>
+            <h2>Danh sách sản phẩm <span className="milkshop-count">{loading || loadError ? "—" : sortedProducts.length}</span></h2>
+            {!loading && !loadError && <p>Tồn kho: {totalStockUnits} đơn vị · Giá trị theo giá bán: {formatCurrency(totalInventoryValue)}</p>}
           </div>
         </div>
 
@@ -635,7 +634,7 @@ export default function AdminProducts() {
               </thead>
               <tbody>
                 {paginatedProducts.map((product) => {
-                  const canonicalCategory = toCanonicalCategory(product.category) || product.category;
+                  const canonicalCategory = product.category;
                   const statusMeta = getStatusMeta(product.status);
                   const productFlags = getProductFlags(product);
 
@@ -717,7 +716,7 @@ export default function AdminProducts() {
         ) : (
           <div className="products-grid">
             {paginatedProducts.map((product) => {
-              const canonicalCategory = toCanonicalCategory(product.category) || product.category;
+              const canonicalCategory = product.category;
               const statusMeta = getStatusMeta(product.status);
               const productFlags = getProductFlags(product);
 

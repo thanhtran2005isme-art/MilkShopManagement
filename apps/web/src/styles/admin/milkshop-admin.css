@@ -92,3 +92,6 @@
 @media(max-width:1100px){.admin-wrapper .products-admin-page .products-overview-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:768px){.admin-wrapper .content-wrapper{padding:14px;}.admin-wrapper .products-admin-page .products-page-header{align-items:flex-start;flex-wrap:wrap;}.admin-wrapper .products-admin-page .products-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.admin-wrapper .products-admin-page .products-filter-row>*{flex:1 1 140px;}.admin-wrapper .products-admin-page .products-search-shell{flex:1 1 100%;}.admin-wrapper .products-admin-page .products-page-actions{margin-left:0;}}
 @media(prefers-reduced-motion:reduce){.admin-wrapper .nav-link,.admin-wrapper .products-admin-page *{transition:none;animation:none;}}
+
+.admin-wrapper .sidebar-logo:hover img{transform:none;filter:none;}
+.admin-wrapper .products-admin-page .products-overview-card:not(.active){border-color:#dce3df;}
