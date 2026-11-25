@@ -19,6 +19,6 @@ if errorlevel 1 (
 )
 
 echo.
-echo [PASS] Lint/typecheck/Web build/backend tests da pass.
-echo [NOTE] Van can manual E2E tren Android/Expo Web theo docs/PHASES_5_10.md.
+echo [PASS] Lint/Web build/backend tests da pass.
+echo [NOTE] Van can manual E2E tren Web Admin.
 exit /b 0

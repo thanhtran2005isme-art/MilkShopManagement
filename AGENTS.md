@@ -1,6 +1,6 @@
 # Repository guidance
 
-KaitoKidShop is a full-stack monorepo.
+MilkShopManagement is an independent Web/API monorepo derived from KaitoKidShop. Current QA scope: Web Admin only. Do not modify or connect to the original repository or its live database.
 
 ## Required reading order for AI / coding agents
 
@@ -11,7 +11,7 @@ Before making non-trivial changes, read:
 3. `docs/BRAND.md`
 4. `docs/UI_UX.md` + `skill/.codex/skills/ui-ux-pro-max/SKILL.md` for UI/UX work
 5. `docs/ROADMAP.md`
-6. `docs/PHASES_5_10.md` when relevant
+6. Historical migration documents only when relevant
 7. `docs/ARCHITECTURE.md`
 8. Relevant sections of `docs/DECISIONS.md`, `docs/decisions/`, and `docs/TROUBLESHOOTING.md`
 9. Relevant source files and recent Git history
@@ -21,18 +21,17 @@ Git and repository documentation are the durable source of truth. Do not reconst
 ## Current repository layout
 
 - Backend: `apps/api` — NestJS 11 + TypeScript + Prisma 7, single backend origin on port `5300`.
-- Mobile: `apps/mobile` — Expo SDK 57 + React Native.
 - Web/Admin: `apps/web` — React + TypeScript + Vite.
 - Database assets: `database` — MariaDB fresh schema and SQL migrations.
 - Development/runtime scripts: `scripts`.
-- Root launcher: `run.bat` starts Node API + Expo Mobile.
+- Root launcher: `run.bat` starts Node API + Web.
 - Documentation: `docs`.
 
 The legacy ASP.NET Core `backend/` tree is retired. Do not reintroduce runtime fallbacks to ports `5053`, `5265`, `5089`, or `5155`.
 
 ## Backend invariants
 
-- MariaDB `kaitokid` remains the data source of truth.
+- Use a separate MariaDB instance/database for MilkShopManagement. The inherited SQL may still refer to `kaitokid`; do not import it into the original project's database.
 - REST, Auth, Admin, Customer, media and Socket.IO are served by `apps/api`.
 - Realtime path is `/chatHub` on the same Node origin.
 - Background workers are owned by Node. Critical workers remain individually feature-flagged.
@@ -47,7 +46,7 @@ For any UI/UX change:
 1. read `docs/UI_UX.md`;
 2. read `skill/.codex/skills/ui-ux-pro-max/SKILL.md`;
 3. generate/search the design system first;
-4. use the stack guideline appropriate to the surface (`react-native` for Mobile);
+4. use the stack guideline appropriate to the surface (React Web);
 5. preserve brand/data rules from `docs/BRAND.md` and existing tokens;
 6. review accessibility, touch targets, keyboard/form behavior, loading/error/empty states and responsive behavior before commit.
 

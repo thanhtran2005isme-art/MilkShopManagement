@@ -2,20 +2,12 @@
 node_modules/
 **/node_modules/
 
-# Expo / React Native
-.expo/
-**/.expo/
-web-build/
-expo-env.d.ts
-/apps/mobile/ios/
-/apps/mobile/android/
-.kotlin/
+# Signing and private keys
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
-.metro-health-check*
 
 # Builds
 dist/
